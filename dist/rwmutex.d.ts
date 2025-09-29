@@ -1,19 +1,8 @@
 /**
  * RWMutex provides read-write mutual exclusion synchronization primitive
  */
-export interface RWMutexInterface {
-    lock(): Promise<void>;
-    unlock(): void;
-    rlock(): Promise<void>;
-    runlock(): void;
-    tryLock(): boolean;
-    tryRLock(): boolean;
-}
-export declare class RWMutex implements RWMutexInterface {
-    private _writeLocked;
-    private _readCount;
-    private _writeWaitQueue;
-    private _readWaitQueue;
+export declare class RWMutex {
+    #private;
     /**
      * Acquire the write lock. Blocks until no readers or writers are active.
      */
@@ -38,7 +27,6 @@ export declare class RWMutex implements RWMutexInterface {
      * Try to acquire a read lock without waiting.
      */
     tryRLock(): boolean;
-    private _processWaitQueue;
     /**
      * Get current read count
      */

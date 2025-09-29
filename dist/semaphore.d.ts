@@ -1,14 +1,8 @@
 /**
  * Semaphore provides counting semaphore synchronization primitive
  */
-export interface SemaphoreInterface {
-    acquire(): Promise<void>;
-    release(): void;
-    tryAcquire(): boolean;
-}
-export declare class Semaphore implements SemaphoreInterface {
-    private _permits;
-    private _waitQueue;
+export declare class Semaphore {
+    #private;
     /**
      * Create a semaphore with the given number of permits
      */

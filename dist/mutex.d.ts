@@ -1,14 +1,8 @@
 /**
  * Mutex provides mutual exclusion synchronization primitive
  */
-export interface MutexInterface {
-    lock(): Promise<void>;
-    unlock(): void;
-    tryLock(): boolean;
-}
-export declare class Mutex implements MutexInterface {
-    private _locked;
-    private _waitQueue;
+export declare class Mutex {
+    #private;
     /**
      * Acquire the lock. If the lock is already held, wait until it's released.
      */

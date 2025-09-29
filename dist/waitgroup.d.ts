@@ -1,14 +1,8 @@
 /**
  * WaitGroup waits for a collection of operations to finish
  */
-export interface WaitGroupInterface {
-    add(delta: number): void;
-    done(): void;
-    wait(): Promise<void>;
-}
-export declare class WaitGroup implements WaitGroupInterface {
-    private _counter;
-    private _waiters;
+export declare class WaitGroup {
+    #private;
     /**
      * Add delta to the WaitGroup counter.
      * If the counter becomes zero, all waiting operations are released.
