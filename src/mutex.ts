@@ -2,13 +2,7 @@
  * Mutex provides mutual exclusion synchronization primitive
  */
 
-export interface MutexInterface {
-  lock(): Promise<void>;
-  unlock(): void;
-  tryLock(): boolean;
-}
-
-export class Mutex implements MutexInterface {
+export class Mutex {
   #locked = false;
   #waitQueue: Array<() => void> = [];
 

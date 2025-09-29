@@ -6,6 +6,3 @@ export { WaitGroup } from './waitgroup.js';
 export { Semaphore } from './semaphore.js';
 export { Channel } from './channel.js';
 export { Cond } from './cond.js';
-
-// Re-export types
-export type { MutexInterface } from './mutex.js';

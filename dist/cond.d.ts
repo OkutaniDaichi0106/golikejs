@@ -1,13 +1,13 @@
 /**
  * Cond implements condition variables for coordinating access to shared resources
  */
-import type { MutexInterface } from './mutex.js';
+import { Mutex } from './mutex.js';
 export declare class Cond {
     #private;
     /**
      * Create a new condition variable associated with the given mutex
      */
-    constructor(mutex: MutexInterface);
+    constructor(mutex: Mutex);
     /**
      * Wait atomically unlocks the mutex and suspends execution until awakened by Signal or Broadcast.
      * When wait returns, the mutex is locked again.

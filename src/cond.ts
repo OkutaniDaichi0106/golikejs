@@ -2,16 +2,16 @@
  * Cond implements condition variables for coordinating access to shared resources
  */
 
-import type { MutexInterface } from './mutex.js';
+import { Mutex } from './mutex.js';
 
 export class Cond {
-  #mutex: MutexInterface;
+  #mutex: Mutex;
   #waiters: Array<() => void> = [];
 
   /**
    * Create a new condition variable associated with the given mutex
    */
-  constructor(mutex: MutexInterface) {
+  constructor(mutex: Mutex) {
     this.#mutex = mutex;
   }
 
