@@ -7,8 +7,7 @@ export interface SemaphoreInterface {
     tryAcquire(): boolean;
 }
 export declare class Semaphore implements SemaphoreInterface {
-    private _permits;
-    private _waitQueue;
+    #private;
     /**
      * Create a semaphore with the given number of permits
      */

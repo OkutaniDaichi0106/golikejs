@@ -7,8 +7,7 @@ export interface WaitGroupInterface {
     wait(): Promise<void>;
 }
 export declare class WaitGroup implements WaitGroupInterface {
-    private _counter;
-    private _waiters;
+    #private;
     /**
      * Add delta to the WaitGroup counter.
      * If the counter becomes zero, all waiting operations are released.

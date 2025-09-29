@@ -9,8 +9,8 @@ export interface WaitGroupInterface {
 }
 
 export class WaitGroup implements WaitGroupInterface {
-  private _counter = 0;
-  private _waiters: Array<() => void> = [];
+  #counter = 0;
+  #waiters: Array<() => void> = [];
 
   /**
    * Add delta to the WaitGroup counter.
@@ -18,15 +18,15 @@ export class WaitGroup implements WaitGroupInterface {
    * If the counter goes negative, throws an error.
    */
   add(delta: number): void {
-    this._counter += delta;
+    this.#counter += delta;
     
-    if (this._counter < 0) {
+    if (this.#counter < 0) {
       throw new Error('WaitGroup: negative counter');
     }
     
-    if (this._counter === 0) {
+    if (this.#counter === 0) {
       // Wake up all waiters
-      const waiters = this._waiters.splice(0);
+      const waiters = this.#waiters.splice(0);
       waiters.forEach(waiter => waiter());
     }
   }
@@ -43,12 +43,12 @@ export class WaitGroup implements WaitGroupInterface {
    * Blocks until the WaitGroup counter is zero.
    */
   async wait(): Promise<void> {
-    if (this._counter === 0) {
+    if (this.#counter === 0) {
       return;
     }
 
     return new Promise<void>((resolve) => {
-      this._waiters.push(resolve);
+      this.#waiters.push(resolve);
     });
   }
 
@@ -56,6 +56,6 @@ export class WaitGroup implements WaitGroupInterface {
    * Get current counter value
    */
   get counter(): number {
-    return this._counter;
+    return this.#counter;
   }
 }

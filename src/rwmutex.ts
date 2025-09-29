@@ -12,22 +12,22 @@ export interface RWMutexInterface {
 }
 
 export class RWMutex implements RWMutexInterface {
-  private _writeLocked = false;
-  private _readCount = 0;
-  private _writeWaitQueue: Array<() => void> = [];
-  private _readWaitQueue: Array<() => void> = [];
+  #writeLocked = false;
+  #readCount = 0;
+  #writeWaitQueue: Array<() => void> = [];
+  #readWaitQueue: Array<() => void> = [];
 
   /**
    * Acquire the write lock. Blocks until no readers or writers are active.
    */
   async lock(): Promise<void> {
-    if (!this._writeLocked && this._readCount === 0) {
-      this._writeLocked = true;
+    if (!this.#writeLocked && this.#readCount === 0) {
+      this.#writeLocked = true;
       return;
     }
 
     return new Promise<void>((resolve) => {
-      this._writeWaitQueue.push(resolve);
+      this.#writeWaitQueue.push(resolve);
     });
   }
 
@@ -35,26 +35,26 @@ export class RWMutex implements RWMutexInterface {
    * Release the write lock.
    */
   unlock(): void {
-    if (!this._writeLocked) {
+    if (!this.#writeLocked) {
       throw new Error('RWMutex: unlock of unlocked write mutex');
     }
 
-    this._writeLocked = false;
-    this._processWaitQueue();
+    this.#writeLocked = false;
+    this.#processWaitQueue();
   }
 
   /**
    * Acquire a read lock. Multiple readers can hold the lock simultaneously.
    */
   async rlock(): Promise<void> {
-    if (!this._writeLocked && this._writeWaitQueue.length === 0) {
-      this._readCount++;
+    if (!this.#writeLocked && this.#writeWaitQueue.length === 0) {
+      this.#readCount++;
       return;
     }
 
     return new Promise<void>((resolve) => {
-      this._readWaitQueue.push(() => {
-        this._readCount++;
+      this.#readWaitQueue.push(() => {
+        this.#readCount++;
         resolve();
       });
     });
@@ -64,13 +64,13 @@ export class RWMutex implements RWMutexInterface {
    * Release a read lock.
    */
   runlock(): void {
-    if (this._readCount === 0) {
+    if (this.#readCount === 0) {
       throw new Error('RWMutex: runlock of unlocked read mutex');
     }
 
-    this._readCount--;
-    if (this._readCount === 0) {
-      this._processWaitQueue();
+    this.#readCount--;
+    if (this.#readCount === 0) {
+      this.#processWaitQueue();
     }
   }
 
@@ -78,10 +78,10 @@ export class RWMutex implements RWMutexInterface {
    * Try to acquire the write lock without waiting.
    */
   tryLock(): boolean {
-    if (this._writeLocked || this._readCount > 0) {
+    if (this.#writeLocked || this.#readCount > 0) {
       return false;
     }
-    this._writeLocked = true;
+    this.#writeLocked = true;
     return true;
   }
 
@@ -89,24 +89,24 @@ export class RWMutex implements RWMutexInterface {
    * Try to acquire a read lock without waiting.
    */
   tryRLock(): boolean {
-    if (this._writeLocked || this._writeWaitQueue.length > 0) {
+    if (this.#writeLocked || this.#writeWaitQueue.length > 0) {
       return false;
     }
-    this._readCount++;
+    this.#readCount++;
     return true;
   }
 
-  private _processWaitQueue(): void {
+  #processWaitQueue(): void {
     // Prioritize writers over readers for fairness
-    if (this._writeWaitQueue.length > 0 && this._readCount === 0) {
-      const next = this._writeWaitQueue.shift();
+    if (this.#writeWaitQueue.length > 0 && this.#readCount === 0) {
+      const next = this.#writeWaitQueue.shift();
       if (next) {
-        this._writeLocked = true;
+        this.#writeLocked = true;
         next();
       }
-    } else if (this._readWaitQueue.length > 0 && !this._writeLocked) {
+    } else if (this.#readWaitQueue.length > 0 && !this.#writeLocked) {
       // Wake up all waiting readers
-      const readers = this._readWaitQueue.splice(0);
+      const readers = this.#readWaitQueue.splice(0);
       readers.forEach(reader => reader());
     }
   }
@@ -115,13 +115,13 @@ export class RWMutex implements RWMutexInterface {
    * Get current read count
    */
   get readCount(): number {
-    return this._readCount;
+    return this.#readCount;
   }
 
   /**
    * Check if write locked
    */
   get writeLocked(): boolean {
-    return this._writeLocked;
+    return this.#writeLocked;
   }
 }

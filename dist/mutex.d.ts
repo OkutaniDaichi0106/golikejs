@@ -7,8 +7,7 @@ export interface MutexInterface {
     tryLock(): boolean;
 }
 export declare class Mutex implements MutexInterface {
-    private _locked;
-    private _waitQueue;
+    #private;
     /**
      * Acquire the lock. If the lock is already held, wait until it's released.
      */

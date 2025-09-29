@@ -8,8 +8,7 @@ export interface CondInterface {
     broadcast(): void;
 }
 export declare class Cond implements CondInterface {
-    private _mutex;
-    private _waiters;
+    #private;
     /**
      * Create a new condition variable associated with the given mutex
      */

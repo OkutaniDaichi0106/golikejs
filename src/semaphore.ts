@@ -9,8 +9,8 @@ export interface SemaphoreInterface {
 }
 
 export class Semaphore implements SemaphoreInterface {
-  private _permits: number;
-  private _waitQueue: Array<() => void> = [];
+  #permits: number;
+  #waitQueue: Array<() => void> = [];
 
   /**
    * Create a semaphore with the given number of permits
@@ -19,20 +19,20 @@ export class Semaphore implements SemaphoreInterface {
     if (permits < 0) {
       throw new Error('Semaphore: permits must be non-negative');
     }
-    this._permits = permits;
+    this.#permits = permits;
   }
 
   /**
    * Acquire a permit. If no permits are available, wait until one is released.
    */
   async acquire(): Promise<void> {
-    if (this._permits > 0) {
-      this._permits--;
+    if (this.#permits > 0) {
+      this.#permits--;
       return;
     }
 
     return new Promise<void>((resolve) => {
-      this._waitQueue.push(resolve);
+      this.#waitQueue.push(resolve);
     });
   }
 
@@ -40,13 +40,13 @@ export class Semaphore implements SemaphoreInterface {
    * Release a permit, potentially waking up a waiter.
    */
   release(): void {
-    if (this._waitQueue.length > 0) {
-      const next = this._waitQueue.shift();
+    if (this.#waitQueue.length > 0) {
+      const next = this.#waitQueue.shift();
       if (next) {
         next();
       }
     } else {
-      this._permits++;
+      this.#permits++;
     }
   }
 
@@ -54,8 +54,8 @@ export class Semaphore implements SemaphoreInterface {
    * Try to acquire a permit without waiting. Returns true if successful.
    */
   tryAcquire(): boolean {
-    if (this._permits > 0) {
-      this._permits--;
+    if (this.#permits > 0) {
+      this.#permits--;
       return true;
     }
     return false;
@@ -65,13 +65,13 @@ export class Semaphore implements SemaphoreInterface {
    * Get available permits count
    */
   get availablePermits(): number {
-    return this._permits;
+    return this.#permits;
   }
 
   /**
    * Get number of threads waiting
    */
   get queueLength(): number {
-    return this._waitQueue.length;
+    return this.#waitQueue.length;
   }
 }

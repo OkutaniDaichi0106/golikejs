@@ -9,11 +9,7 @@ export interface ChannelInterface<T> {
     trySend(value: T): boolean;
 }
 export declare class Channel<T> implements ChannelInterface<T> {
-    private _buffer;
-    private _capacity;
-    private _closed;
-    private _sendWaiters;
-    private _receiveWaiters;
+    #private;
     /**
      * Create a channel with the given capacity.
      * If capacity is 0, creates an unbuffered channel.
@@ -40,7 +36,6 @@ export declare class Channel<T> implements ChannelInterface<T> {
      * Try to send a value without blocking. Returns true if successful.
      */
     trySend(value: T): boolean;
-    private _processSendWaiters;
     /**
      * Get current buffer length
      */
