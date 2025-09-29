@@ -9,8 +9,3 @@ export { Cond } from './cond.js';
 
 // Re-export types
 export type { MutexInterface } from './mutex.js';
-export type { RWMutexInterface } from './rwmutex.js';
-export type { WaitGroupInterface } from './waitgroup.js';
-export type { SemaphoreInterface } from './semaphore.js';
-export type { ChannelInterface } from './channel.js';
-export type { CondInterface } from './cond.js';

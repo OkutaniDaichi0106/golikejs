@@ -2,12 +2,7 @@
  * Cond implements condition variables for coordinating access to shared resources
  */
 import type { MutexInterface } from './mutex.js';
-export interface CondInterface {
-    wait(): Promise<void>;
-    signal(): void;
-    broadcast(): void;
-}
-export declare class Cond implements CondInterface {
+export declare class Cond {
     #private;
     /**
      * Create a new condition variable associated with the given mutex

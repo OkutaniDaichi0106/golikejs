@@ -4,13 +4,7 @@
 
 import type { MutexInterface } from './mutex.js';
 
-export interface CondInterface {
-  wait(): Promise<void>;
-  signal(): void;
-  broadcast(): void;
-}
-
-export class Cond implements CondInterface {
+export class Cond {
   #mutex: MutexInterface;
   #waiters: Array<() => void> = [];
 

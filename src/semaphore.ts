@@ -2,13 +2,7 @@
  * Semaphore provides counting semaphore synchronization primitive
  */
 
-export interface SemaphoreInterface {
-  acquire(): Promise<void>;
-  release(): void;
-  tryAcquire(): boolean;
-}
-
-export class Semaphore implements SemaphoreInterface {
+export class Semaphore {
   #permits: number;
   #waitQueue: Array<() => void> = [];
 

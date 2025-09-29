@@ -2,15 +2,7 @@
  * Channel provides Go-style channels for communication between async operations
  */
 
-export interface ChannelInterface<T> {
-  send(value: T): Promise<void>;
-  receive(): Promise<T>;
-  close(): void;
-  tryReceive(): T | undefined;
-  trySend(value: T): boolean;
-}
-
-export class Channel<T> implements ChannelInterface<T> {
+export class Channel<T> {
   #buffer: T[] = [];
   #capacity: number;
   #closed = false;

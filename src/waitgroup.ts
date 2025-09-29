@@ -2,13 +2,7 @@
  * WaitGroup waits for a collection of operations to finish
  */
 
-export interface WaitGroupInterface {
-  add(delta: number): void;
-  done(): void;
-  wait(): Promise<void>;
-}
-
-export class WaitGroup implements WaitGroupInterface {
+export class WaitGroup {
   #counter = 0;
   #waiters: Array<() => void> = [];
 
