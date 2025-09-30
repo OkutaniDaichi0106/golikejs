@@ -1,8 +1,6 @@
-// gosync - Go-style synchronization primitives for JavaScript/TypeScript
-
-export { Mutex } from './mutex.js';
-export { RWMutex } from './rwmutex.js';
-export { WaitGroup } from './waitgroup.js';
-export { Semaphore } from './semaphore.js';
-export { Channel } from './channel.js';
-export { Cond } from './cond.js';
+export * from './mutex.js';
+export * from './rwmutex.js';
+export * from './waitgroup.js';
+export * from './semaphore.js';
+export * from './channel.js';
+export * from './cond.js';

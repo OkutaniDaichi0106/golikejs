@@ -2,16 +2,17 @@
   "name": "golikejs",
   "version": "0.1.0",
   "description": "Reimplementations of Go standard packages (e.g. sync, context) for JavaScript/TypeScript",
-  "types": "dist/index.d.ts",
   "type": "module",
   "exports": {
     "./sync": {
       "types": "./dist/sync/index.d.ts",
-      "import": "./dist/sync/index.js"
+      "import": "./dist/sync/index.js",
+      "require": "./dist/sync/index.cjs"
     },
     "./context": {
       "types": "./dist/context/index.d.ts",
-      "import": "./dist/context/index.js"
+      "import": "./dist/context/index.js",
+      "require": "./dist/context/index.cjs"
     }
   },
   "scripts": {
@@ -51,7 +52,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
-    "@types/bun": "latest",
+    "@types/node": "^24.6.0",
+    "@types/react": "^19.1.16",
     "bun-types": "^1.2.23",
     "typescript": "^5"
   }

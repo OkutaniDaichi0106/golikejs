@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'bun:test';
 import { Mutex, RWMutex, WaitGroup, Semaphore, Channel, Cond } from './index.js';
 
-describe('gosync package', () => {
+describe('golikejs package', () => {
   it('should export all synchronization primitives', () => {
     expect(Mutex).toBeDefined();
     expect(RWMutex).toBeDefined();

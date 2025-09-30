@@ -180,7 +180,7 @@ describe('Channel', () => {
       await input.send(4);
       
       // Fan-out operation - process all available values
-      const values = [];
+      const values: number[] = [];
       for (let i = 0; i < 4; i++) {
         values.push(await input.receive());
       }
@@ -229,7 +229,7 @@ describe('Channel', () => {
       }
       
       // Collect results
-      const collectedResults = [];
+      const collectedResults: number[] = [];
       for (let i = 0; i < 5; i++) {
         collectedResults.push(await results.receive());
       }

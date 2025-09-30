@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from 'bun:test';
-import { 
-    Context, 
-    background, 
-    watchSignal, 
+import type { Context } from './context';
+import {
+    background,
+    watchSignal,
     withAbort,
-    withCancel, 
-    withCancelCause, 
-    withTimeout, 
+    withCancel,
+    withCancelCause,
+    withTimeout,
     watchPromise,
     ContextCancelledError,
     ContextTimeoutError
