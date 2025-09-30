@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, jest } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import type { Context } from './context';
 import {
     background,

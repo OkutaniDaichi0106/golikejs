@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect } from '@jest/globals';
 import { Mutex } from './mutex.js';
 import { Cond } from './cond.js';
 
