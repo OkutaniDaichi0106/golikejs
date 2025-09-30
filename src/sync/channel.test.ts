@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
-import { Channel } from '../src/channel.js';
+import { Channel } from './channel.js';
 
 describe('Channel', () => {
   it('should throw error for negative capacity', () => {
@@ -238,6 +238,76 @@ describe('Channel', () => {
       
       collectedResults.sort((a, b) => a - b);
       expect(collectedResults).toEqual([2, 4, 6, 8, 10]);
+    });
+  });
+
+  describe('Channel used as semaphore (prefilled tokens)', () => {
+    it('limits concurrent workers to capacity', async () => {
+      const capacity = 4;
+      const ch = new Channel<number>(capacity);
+
+      // pre-fill tokens
+      for (let i = 0; i < capacity; i++) {
+        await ch.send(1);
+      }
+
+      let concurrent = 0;
+      let maxConcurrent = 0;
+
+      const worker = async () => {
+        await ch.receive(); // acquire
+        concurrent++;
+        maxConcurrent = Math.max(maxConcurrent, concurrent);
+
+        // simulate work
+        await new Promise((res) => setTimeout(res, 10 + Math.floor(Math.random() * 30)));
+
+        concurrent--;
+        await ch.send(1); // release
+      };
+
+      const tasks: Promise<void>[] = [];
+      for (let i = 0; i < 30; i++) tasks.push(worker());
+
+      await Promise.all(tasks);
+
+      expect(maxConcurrent).toBeLessThanOrEqual(capacity);
+    });
+
+    it('tryReceive behaves as tryAcquire', async () => {
+      const ch = new Channel<number>(1);
+      await ch.send(1);
+
+      const got = ch.tryReceive();
+      expect(got).toBe(1);
+
+      const got2 = ch.tryReceive();
+      expect(got2).toBeUndefined();
+    });
+
+    it('works with buffered channel as mutex (capacity=1)', async () => {
+      const ch = new Channel<number>(1); // buffered mutex-like
+
+      let inCs = 0;
+      let maxInCs = 0;
+
+      const worker = async () => {
+        await ch.receive();
+        inCs++;
+        maxInCs = Math.max(maxInCs, inCs);
+        await new Promise((r) => setTimeout(r, 5));
+        inCs--;
+        await ch.send(1);
+      };
+
+      // prefill one token so the channel acts as a mutex
+      await ch.send(1);
+
+      const tasks = Array.from({ length: 10 }, () => worker());
+      await Promise.all(tasks);
+
+      expect(maxInCs).toBeGreaterThan(0);
+      expect(maxInCs).toBeLessThanOrEqual(1); // buffered capacity=1 acts like mutex
     });
   });
 });

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
-import { Mutex } from '../src/mutex.js';
+import { Mutex } from './mutex.js';
 
 describe('Mutex', () => {
   let mutex: Mutex;

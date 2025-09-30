@@ -3,8 +3,12 @@
  */
 
 export class Channel<T> {
-  #buffer: T[] = [];
+  // ring buffer storage when capacity > 0
+  #buffer: (T | undefined)[] | null = null;
   #capacity: number;
+  #head = 0; // index of next read
+  #tail = 0; // index of next write
+  #count = 0; // number of items in buffer
   #closed = false;
   #sendWaiters: Array<{ value: T; resolve: () => void }> = [];
   #receiveWaiters: Array<{ resolve: (value: T) => void }> = [];
@@ -18,6 +22,7 @@ export class Channel<T> {
       throw new Error('Channel: capacity must be non-negative');
     }
     this.#capacity = capacity;
+    if (capacity > 0) this.#buffer = new Array<T | undefined>(capacity);
   }
 
   /**
@@ -39,8 +44,12 @@ export class Channel<T> {
     }
 
     // If buffered and buffer has space, add to buffer
-    if (this.#capacity > 0 && this.#buffer.length < this.#capacity) {
-      this.#buffer.push(value);
+    if (this.#capacity > 0 && this.#count < this.#capacity) {
+      // write at tail
+      const buf = this.#buffer!;
+      buf[this.#tail] = value;
+      this.#tail = (this.#tail + 1) % this.#capacity;
+      this.#count++;
       return;
     }
 
@@ -54,9 +63,13 @@ export class Channel<T> {
    * Receive a value from the channel. Blocks until a value is available or the channel is closed.
    */
   async receive(): Promise<T> {
-    // If buffer has values, take from buffer
-    if (this.#buffer.length > 0) {
-      const value = this.#buffer.shift()!;
+    // If buffer has values, take from ring buffer
+    if (this.#count > 0) {
+      const buf = this.#buffer!;
+      const value = buf[this.#head]!;
+      buf[this.#head] = undefined;
+      this.#head = (this.#head + 1) % this.#capacity;
+      this.#count--;
       this.#processSendWaiters();
       return value;
     }
@@ -103,8 +116,12 @@ export class Channel<T> {
    * Try to receive a value without blocking. Returns undefined if no value is available.
    */
   tryReceive(): T | undefined {
-    if (this.#buffer.length > 0) {
-      const value = this.#buffer.shift()!;
+    if (this.#count > 0) {
+      const buf = this.#buffer!;
+      const value = buf[this.#head]!;
+      buf[this.#head] = undefined;
+      this.#head = (this.#head + 1) % this.#capacity;
+      this.#count--;
       this.#processSendWaiters();
       return value;
     }
@@ -137,9 +154,12 @@ export class Channel<T> {
       }
     }
 
-    // If buffered and buffer has space, add to buffer
-    if (this.#capacity > 0 && this.#buffer.length < this.#capacity) {
-      this.#buffer.push(value);
+    // If buffered and buffer has space, add to ring buffer
+    if (this.#capacity > 0 && this.#count < this.#capacity) {
+      const buf = this.#buffer!;
+      buf[this.#tail] = value;
+      this.#tail = (this.#tail + 1) % this.#capacity;
+      this.#count++;
       return true;
     }
 
@@ -148,10 +168,13 @@ export class Channel<T> {
 
   #processSendWaiters(): void {
     // If buffer has space and there are waiting senders, move them to buffer
-    while (this.#buffer.length < this.#capacity && this.#sendWaiters.length > 0) {
+    while (this.#count < this.#capacity && this.#sendWaiters.length > 0) {
       const waiter = this.#sendWaiters.shift();
       if (waiter) {
-        this.#buffer.push(waiter.value);
+        const buf = this.#buffer!;
+        buf[this.#tail] = waiter.value;
+        this.#tail = (this.#tail + 1) % this.#capacity;
+        this.#count++;
         waiter.resolve();
       }
     }
@@ -161,7 +184,7 @@ export class Channel<T> {
    * Get current buffer length
    */
   get length(): number {
-    return this.#buffer.length;
+    return this.#count;
   }
 
   /**

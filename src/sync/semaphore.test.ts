@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
-import { Semaphore } from '../src/semaphore.js';
+import { Semaphore } from './semaphore.js';
 
 describe('Semaphore', () => {
   it('should throw error for negative permits', () => {

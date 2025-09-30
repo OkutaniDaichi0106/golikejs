@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { Mutex, RWMutex, WaitGroup, Semaphore, Channel, Cond } from '../src/index.js';
+import { Mutex, RWMutex, WaitGroup, Semaphore, Channel, Cond } from './index.js';
 
 describe('gosync package', () => {
   it('should export all synchronization primitives', () => {

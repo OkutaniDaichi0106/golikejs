@@ -1,15 +1,19 @@
 {
-  "name": "gosync",
+  "name": "golikejs",
   "version": "1.0.0",
-  "description": "Go-style synchronization primitives for JavaScript/TypeScript",
+  "description": "Reimplementations of Go standard packages (e.g. sync, context) for JavaScript/TypeScript",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+    "./sync": {
+      "types": "./dist/sync/index.d.ts",
+      "import": "./dist/sync/index.js"
+    },
+    "./context": {
+      "types": "./dist/context/index.d.ts",
+      "import": "./dist/context/index.js"
     }
   },
   "scripts": {
@@ -36,15 +40,19 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/OkutaniDaichi0106/gosync.git"
+    "url": "https://github.com/OkutaniDaichi0106/golikejs.git"
   },
   "files": [
     "dist/**/*",
     "README.md",
     "LICENSE"
   ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "devDependencies": {
     "@types/bun": "latest",
+    "bun-types": "^1.2.23",
     "typescript": "^5"
   }
 }

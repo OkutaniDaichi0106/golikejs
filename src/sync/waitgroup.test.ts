@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
-import { WaitGroup } from '../src/waitgroup.js';
+import { WaitGroup } from './waitgroup.js';
 
 describe('WaitGroup', () => {
   let wg: WaitGroup;

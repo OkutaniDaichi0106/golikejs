@@ -6,6 +6,7 @@ import { Mutex } from './mutex.js';
 
 export class Cond {
   #mutex: Mutex;
+  // waiters are parameterless callbacks invoked when signaled
   #waiters: Array<() => void> = [];
 
   /**
@@ -25,13 +26,13 @@ export class Cond {
 
     // Wait for a signal
     await new Promise<void>((resolve) => {
-      this.#waiters.push(resolve);
+      const waiter = () => resolve();
+      this.#waiters.push(waiter);
     });
 
     // Reacquire the mutex before returning
     await this.#mutex.lock();
   }
-
   /**
    * Signal wakes one waiting goroutine, if any.
    * The caller must hold the mutex when calling Signal.
