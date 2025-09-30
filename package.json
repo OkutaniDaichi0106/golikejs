@@ -32,6 +32,15 @@
   },
   "main": "dist/index.cjs",
   "module": "dist/index.js",
+  "typesVersions": {
+    "*": {
+      "sync": ["dist/sync/index.d.ts"],
+      "sync/*": ["dist/sync/*"],
+      "context": ["dist/context/index.d.ts"],
+      "context/*": ["dist/context/*"],
+      "*": ["dist/*"]
+    }
+  },
   "keywords": [
     "sync",
     "synchronization",
