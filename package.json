@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Reimplementations of Go standard packages (e.g. sync, context) for JavaScript/TypeScript",
   "type": "module",
+  "types": "dist/index.d.ts",
   "exports": {
     "./sync": {
       "types": "./dist/sync/index.d.ts",
