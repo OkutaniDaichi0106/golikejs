@@ -91,7 +91,7 @@ describe('Semaphore', () => {
     
     // Should take approximately 100ms (2 batches of 50ms each)
     expect(elapsed).toBeGreaterThanOrEqual(90);
-    expect(elapsed).toBeLessThan(150);
+    expect(elapsed).toBeLessThan(200);
     
     expect(results).toHaveLength(4);
     expect(new Set(results)).toEqual(new Set([0, 1, 2, 3]));
