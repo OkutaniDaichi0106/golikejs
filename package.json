@@ -7,18 +7,15 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.js"
     },
     "./sync": {
       "types": "./dist/sync/index.d.ts",
-      "import": "./dist/sync/index.js",
-      "require": "./dist/sync/index.cjs"
+      "import": "./dist/sync/index.js"
     },
     "./context": {
       "types": "./dist/context/index.d.ts",
-      "import": "./dist/context/index.js",
-      "require": "./dist/context/index.cjs"
+      "import": "./dist/context/index.js"
     }
   },
   "scripts": {
@@ -29,7 +26,7 @@
     "test:coverage": "jest --coverage",
     "prepack": "npm run build"
   },
-  "main": "dist/index.cjs",
+  "main": "dist/index.js",
   "module": "dist/index.js",
   "typesVersions": {
     "*": {
