@@ -8,7 +8,10 @@ The format is based on "Keep a Changelog" and this project adheres to Semantic V
 
 ## [Unreleased]
 
-- No changes yet.
+### Added
+
+- `src/io` — Added Go-like io utilities.
+- `src/io/errors.ts` — Added Go-like io errors.
 
 ## [0.1.0] - 2025-09-30
 
@@ -36,4 +39,3 @@ The format is based on "Keep a Changelog" and this project adheres to Semantic V
 ---
 
 For details, see `README.md` and repository files.
-

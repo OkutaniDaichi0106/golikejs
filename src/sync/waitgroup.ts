@@ -47,6 +47,20 @@ export class WaitGroup {
   }
 
   /**
+   * Execute an async function and automatically manage the counter.
+   * Equivalent to add(1) followed by executing the function and calling done() when it completes.
+   */
+  async go(fn: () => Promise<void> | void): Promise<void> {
+    this.add(1);
+    
+    try {
+      await fn();
+    } finally {
+      this.done();
+    }
+  }
+
+  /**
    * Get current counter value
    */
   get counter(): number {

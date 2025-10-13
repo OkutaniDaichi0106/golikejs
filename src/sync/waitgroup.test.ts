@@ -145,4 +145,58 @@ describe('WaitGroup', () => {
       results.indexOf('stage1-op2')
     ));
   });
+
+  it('should execute function with go method and manage counter automatically', async () => {
+    const results: string[] = [];
+    
+    // Start two operations using go method
+    await Promise.all([
+      wg.go(async () => {
+        await new Promise(resolve => setTimeout(resolve, 10));
+        results.push('op1');
+      }),
+      wg.go(async () => {
+        await new Promise(resolve => setTimeout(resolve, 20));
+        results.push('op2');
+      })
+    ]);
+    
+    // Wait for all operations to complete
+    await wg.wait();
+    
+    expect(wg.counter).toBe(0);
+    expect(results).toContain('op1');
+    expect(results).toContain('op2');
+  });
+
+  it('should handle synchronous functions with go method', async () => {
+    const results: number[] = [];
+    
+    await wg.go(() => {
+      results.push(1);
+    });
+    
+    await wg.wait();
+    
+    expect(wg.counter).toBe(0);
+    expect(results).toEqual([1]);
+  });
+
+  it('should call done even if go function throws', async () => {
+    let errorCaught = false;
+    
+    try {
+      await wg.go(async () => {
+        throw new Error('test error');
+      });
+    } catch (error) {
+      errorCaught = true;
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toBe('test error');
+    }
+    
+    // Even though the function threw, done should have been called
+    expect(errorCaught).toBe(true);
+    expect(wg.counter).toBe(0);
+  });
 });
