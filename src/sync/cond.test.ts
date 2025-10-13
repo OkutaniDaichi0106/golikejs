@@ -100,7 +100,7 @@ describe('Cond', () => {
     m.unlock();
 
     // Wait a bit for all to wake
-    await new Promise((r) => setTimeout(r, 50));
+    await new Promise((r) => setTimeout(r, 10));
 
     expect(woke).toBe(4);
 

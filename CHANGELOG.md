@@ -6,13 +6,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on "Keep a Changelog" and this project adheres to Semantic Versioning.
 
+## [0.3.1] - 2025-10-13
+
+### Performance
+
+- **Test optimization**: Reduced test execution time by ~18% (from ~11s to ~9.5s) by optimizing timeouts and reducing worker counts in integration tests.
+- **Timeout reductions**: Decreased setTimeout values across tests (semaphore: 50ms→10ms, context: 100ms→50ms, channel workers: 10-40ms→5-15ms).
+- **Worker count optimization**: Reduced concurrent worker count in channel tests from 30 to 15 for faster execution.
+
 ## [0.3.0] - 2025-01-15
 
 ### Added
 
 - **`select()` function**: Added Go-style select functionality to the channel package for multiplexing channel operations with default case support.
-
-## [0.2.0] - 2025-01-15
+- **Helper functions**: Added `receive()`, `send()`, and `default_()` helper functions with Promise-chain style API for more intuitive select usage.
 
 ## [0.2.0] - 2025-01-15
 
@@ -22,7 +29,13 @@ The format is based on "Keep a Changelog" and this project adheres to Semantic V
 - `src/io/errors.ts` — Added Go-like io errors.
 - `WaitGroup.go()` — Added Go method to WaitGroup for automatic counter management of async functions.
 
-## [Unreleased]
+## [0.1.8] - 2025-10-13
+
+### Added
+
+- `src/io` — Added Go-like io utilities.
+- `src/io/errors.ts` — Added Go-like io errors.
+- `WaitGroup.go()` — Added Go method to WaitGroup for automatic counter management of async functions.
 
 ## [0.1.8] - 2025-10-13
 

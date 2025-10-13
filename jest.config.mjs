@@ -9,4 +9,10 @@ export default {
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
+  // Force exit to prevent hanging processes from setTimeout in tests
+  forceExit: true,
+  // Clear mocks between tests
+  clearMocks: true,
+  // Reset modules between tests
+  resetModules: true,
 };

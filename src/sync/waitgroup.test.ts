@@ -42,7 +42,7 @@ describe('WaitGroup', () => {
     
     // Start three async operations
     const op1 = async () => {
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise(resolve => setTimeout(resolve, 10));
       results.push(1);
       wg.done();
     };

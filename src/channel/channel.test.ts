@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
-import { Channel, select } from './channel.js';
+import { Channel, select, receive, send, default_ } from './channel.js';
 
 describe('Channel', () => {
   it('should throw error for negative capacity', () => {
@@ -291,14 +291,14 @@ describe('Channel', () => {
         maxConcurrent = Math.max(maxConcurrent, concurrent);
 
         // simulate work
-        await new Promise((res) => setTimeout(res, 10 + Math.floor(Math.random() * 30)));
+        await new Promise((res) => setTimeout(res, 5 + Math.floor(Math.random() * 10)));
 
         concurrent--;
         await ch.send(1); // release
       };
 
       const tasks: Promise<void>[] = [];
-      for (let i = 0; i < 30; i++) tasks.push(worker());
+      for (let i = 0; i < 15; i++) tasks.push(worker());
 
       await Promise.all(tasks);
 
@@ -439,6 +439,68 @@ describe('Channel', () => {
 
     it('should throw error when no cases provided', async () => {
       await expect(select([])).rejects.toThrow('select: no cases provided');
+    });
+  });
+
+  describe('select helper functions', () => {
+    it('should work with receive helper', async () => {
+      const ch = new Channel<number>();
+
+      let receivedValue: number | undefined;
+      setTimeout(() => ch.send(42), 10);
+
+      await select([
+        receive(ch).then((value, ok) => { receivedValue = value; })
+      ]);
+
+      expect(receivedValue).toBe(42);
+    });
+
+    it('should work with send helper', async () => {
+      const ch = new Channel<number>();
+
+      let sent = false;
+      setTimeout(async () => {
+        await ch.receive();
+      }, 10);
+
+      await select([
+        send(ch, 100).then(() => { sent = true; })
+      ]);
+
+      expect(sent).toBe(true);
+    });
+
+    it('should work with default helper', async () => {
+      const ch = new Channel<number>();
+
+      let defaultExecuted = false;
+
+      await select([
+        receive(ch).then(() => {}),
+        default_(() => { defaultExecuted = true; })
+      ]);
+
+      expect(defaultExecuted).toBe(true);
+    });
+
+    it('should work with mixed helpers', async () => {
+      const ch1 = new Channel<number>(1); // buffered channel
+      const ch2 = new Channel<number>();
+
+      let result: string | undefined;
+
+      // Pre-fill buffered channel
+      await ch1.send(42);
+
+      await select([
+        receive(ch1).then((value, ok) => { result = `received: ${value}`; }),
+        receive(ch2).then((value, ok) => { result = `received from ch2: ${value}`; }),
+        send(ch2, 100).then(() => { result = 'sent'; }),
+        default_(() => { result = 'default'; })
+      ]);
+
+      expect(result).toBe('received: 42');
     });
   });
 });

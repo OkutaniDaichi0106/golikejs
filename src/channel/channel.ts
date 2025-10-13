@@ -318,3 +318,42 @@ export async function select<T = any>(cases: SelectCase<T>[]): Promise<void> {
     ? (result.case_ as ReceiveCase<T>).action(result.value!, result.ok!)
     : (result.case_ as SendCase<T>).action();
 }
+
+/**
+ * Helper function to create a receive case for select()
+ * @example
+ * receive(channel).then((value, ok) => console.log('received:', value))
+ */
+export function receive<T = any>(channel: Channel<T>): {
+  then(action: (value: T | undefined, ok: boolean) => void): ReceiveCase<T>
+} {
+  return {
+    then(action: (value: T | undefined, ok: boolean) => void): ReceiveCase<T> {
+      return { channel, action };
+    }
+  };
+}
+
+/**
+ * Helper function to create a send case for select()
+ * @example
+ * send(channel, value).then(() => console.log('sent'))
+ */
+export function send<T = any>(channel: Channel<T>, value: T): {
+  then(action: () => void): SendCase<T>
+} {
+  return {
+    then(action: () => void): SendCase<T> {
+      return { channel, value, action };
+    }
+  };
+}
+
+/**
+ * Helper function to create a default case for select()
+ * @example
+ * default_(() => console.log('no operation ready'))
+ */
+export function default_(action: () => void): DefaultCase {
+  return { default: action };
+}

@@ -77,7 +77,7 @@ describe('Semaphore', () => {
         await sem.acquire();
         
         // Simulate work
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await new Promise(resolve => setTimeout(resolve, 10));
         results.push(id);
         
         sem.release();
@@ -89,9 +89,9 @@ describe('Semaphore', () => {
     const endTime = Date.now();
     const elapsed = endTime - startTime;
     
-    // Should take approximately 100ms (2 batches of 50ms each)
-    expect(elapsed).toBeGreaterThanOrEqual(90);
-    expect(elapsed).toBeLessThan(200);
+    // Should take approximately 20ms (2 batches of 10ms each)
+    expect(elapsed).toBeGreaterThanOrEqual(15);
+    expect(elapsed).toBeLessThan(50);
     
     expect(results).toHaveLength(4);
     expect(new Set(results)).toEqual(new Set([0, 1, 2, 3]));

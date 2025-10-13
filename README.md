@@ -69,24 +69,26 @@ const [value, ok] = await ch.receive();
 Channel select (multiplexing)
 
 ```ts
-import { Channel, select } from 'golikejs';
+import { Channel, select, receive, send, default_ } from 'golikejs';
 
 const ch1 = new Channel<string>();
 const ch2 = new Channel<number>();
 
-// Select from multiple channels
+// Intuitive API with helper functions
 let result: string | undefined;
+await select([
+  receive(ch1).then((value, ok) => { result = `ch1: ${value}`; }),
+  receive(ch2).then((value, ok) => { result = `ch2: ${value}`; }),
+  send(ch1, 'hello').then(() => { result = 'sent to ch1'; }),
+  default_(() => { result = 'no data available'; })
+]);
+
+// Or using the direct object API
 await select([
   { channel: ch1, action: (value, ok) => { result = `ch1: ${value}`; } },
   { channel: ch2, action: (value, ok) => { result = `ch2: ${value}`; } },
-  { channel: ch1, value: 'hello', action: () => { result = 'sent to ch1'; } }
-]);
-
-// Select with default (non-blocking)
-let defaultExecuted = false;
-await select([
-  { channel: ch1, action: () => {} },
-  { default: () => { defaultExecuted = true; result = 'no data available'; } }
+  { channel: ch1, value: 'hello', action: () => { result = 'sent to ch1'; } },
+  { default: () => { result = 'no data available'; } }
 ]);
 ```
 
@@ -168,6 +170,7 @@ API summary
 - WaitGroup: `add()`, `done()`, `wait()`
 - Semaphore: `acquire()`, `release()`, `tryAcquire()`
 - Channel<T>: `send()`, `receive()`, `trySend()`, `tryReceive()`, `close()`
+- select: `select()`, `receive()`, `send()`, `default_()`
 - Cond: `wait()`, `signal()`, `broadcast()`
 - Context helpers in `context` module: `Background()`, `withCancel()`, `withTimeout()`, and `withDeadline()` (see source API for details)
 

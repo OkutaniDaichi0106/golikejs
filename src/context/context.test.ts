@@ -199,7 +199,7 @@ describe('Context', () => {
             });
             
             // Wait longer than timeout
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 50));
             
             expect(done).toBe(true);
             expect(caughtError).toBeInstanceOf(Error);

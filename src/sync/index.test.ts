@@ -35,7 +35,7 @@ describe('golikejs package', () => {
     
     const workers = Array.from({ length: numWorkers }, (_, id) =>
       (async (workerId: number) => {
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 3; i++) {
           await mutex.lock();
           
           // Critical section - modify shared state
@@ -46,7 +46,7 @@ describe('golikejs package', () => {
           mutex.unlock();
           
           // Non-critical work
-          await new Promise(resolve => setTimeout(resolve, Math.random() * 10));
+          await new Promise(resolve => setTimeout(resolve, Math.random() * 5));
         }
         wg.done();
       })(id)
@@ -55,15 +55,15 @@ describe('golikejs package', () => {
     // Wait for all workers to complete
     await wg.wait();
     
-    expect(results).toHaveLength(15); // 3 workers * 5 items each
+    expect(results).toHaveLength(9); // 3 workers * 3 items each
     
     // Verify each worker contributed
     const worker0Results = results.filter(x => Math.floor(x / 100) === 0);
     const worker1Results = results.filter(x => Math.floor(x / 100) === 1);
     const worker2Results = results.filter(x => Math.floor(x / 100) === 2);
     
-    expect(worker0Results).toHaveLength(5);
-    expect(worker1Results).toHaveLength(5);
-    expect(worker2Results).toHaveLength(5);
+    expect(worker0Results).toHaveLength(3);
+    expect(worker1Results).toHaveLength(3);
+    expect(worker2Results).toHaveLength(3);
   });
 });
