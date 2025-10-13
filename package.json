@@ -19,6 +19,11 @@
       "types": "./dist/context/index.d.ts",
       "import": "./dist/context/index.js",
       "require": "./dist/context/index.js"
+    },
+    "./channel": {
+      "types": "./dist/channel/index.d.ts",
+      "import": "./dist/channel/index.js",
+      "require": "./dist/channel/index.js"
     }
   },
   "scripts": {
@@ -43,6 +48,12 @@
       ],
       "context/*": [
         "dist/context/*"
+      ],
+      "channel": [
+        "dist/channel/index.d.ts"
+      ],
+      "channel/*": [
+        "dist/channel/*"
       ],
       "*": [
         "dist/*"
