@@ -206,4 +206,115 @@ export class Channel<T> {
   get closed(): boolean {
     return this.#closed;
   }
+
+  /**
+   * Check if data is available for reading (used by select)
+   */
+  hasData(): boolean {
+    return this.#count > 0 || this.#sendWaiters.length > 0;
+  }
+
+  /**
+   * Check if data can be sent immediately (used by select)
+   */
+  canSend(): boolean {
+    return this.#receiveWaiters.length > 0 || (this.#capacity > 0 && this.#count < this.#capacity);
+  }
+}
+
+/**
+ * Select cases for channel operations
+ */
+export interface ReceiveCase<T = any> {
+  /** Channel to receive from */
+  channel: Channel<T>;
+  /** Action to execute when this case is selected */
+  action: (value: T | undefined, ok: boolean) => void;
+}
+
+export interface SendCase<T = any> {
+  /** Channel and value to send */
+  channel: Channel<T>;
+  value: T;
+  /** Action to execute when this case is selected */
+  action: () => void;
+}
+
+export interface DefaultCase {
+  /** Default action when no other cases are ready */
+  default: () => void;
+}
+
+export type SelectCase<T = any> = ReceiveCase<T> | SendCase<T> | DefaultCase;
+
+/**
+ * Select performs a select operation on multiple channel operations.
+ * It waits for one of the cases to be ready and executes its action.
+ * If a default case is provided and no other cases are ready, it executes the default action.
+ *
+ * @param cases Array of select cases (receive, send, or default)
+ *
+ * @example
+ * ```typescript
+ * await select([
+ *   { channel: ch1, action: (value, ok) => console.log('received:', value) },
+ *   { channel: ch2, value: 'hello', action: () => console.log('sent') },
+ *   { default: () => console.log('no operation ready') }
+ * ]);
+ * ```
+ */
+export async function select<T = any>(cases: SelectCase<T>[]): Promise<void> {
+  if (cases.length === 0) {
+    throw new Error('select: no cases provided');
+  }
+
+  // Separate cases by type in a single pass - optimized for performance
+  const receiveCases: ReceiveCase<T>[] = [];
+  const sendCases: SendCase<T>[] = [];
+  let defaultCase: DefaultCase | undefined;
+
+  // Single pass classification with validation
+  for (const case_ of cases) {
+    if ('default' in case_) {
+      if (defaultCase) throw new Error('select: multiple default cases not allowed');
+      defaultCase = case_;
+    } else if ('value' in case_) {
+      sendCases.push(case_ as SendCase<T>);
+    } else {
+      receiveCases.push(case_ as ReceiveCase<T>);
+    }
+  }
+
+  // Fast path: if default case exists and no operations are ready, execute immediately
+  if (defaultCase) {
+    const hasReadyOperation = receiveCases.some(case_ => case_.channel.hasData()) ||
+                             sendCases.some(case_ => case_.channel.canSend());
+    if (!hasReadyOperation) {
+      defaultCase.default();
+      return;
+    }
+  }
+
+  // Create racing promises - optimized to avoid async function overhead
+  const promises: Promise<{ type: 'receive' | 'send'; case_: ReceiveCase<T> | SendCase<T>; value?: T; ok?: boolean }>[] = [];
+
+  // Add receive promises
+  for (const case_ of receiveCases) {
+    promises.push(
+      case_.channel.receive().then(([value, ok]) => ({ type: 'receive' as const, case_, value, ok }))
+    );
+  }
+
+  // Add send promises
+  for (const case_ of sendCases) {
+    promises.push(
+      case_.channel.send(case_.value).then(() => ({ type: 'send' as const, case_ }))
+    );
+  }
+
+  // Race and execute winner - optimized with ternary operator
+  const result = await Promise.race(promises);
+  result.type === 'receive'
+    ? (result.case_ as ReceiveCase<T>).action(result.value!, result.ok!)
+    : (result.case_ as SendCase<T>).action();
 }

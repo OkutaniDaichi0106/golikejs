@@ -28,6 +28,7 @@ Features
 - WaitGroup — wait for a collection of goroutine-like tasks.
 - Semaphore — counting semaphore.
 - Channel<T> — unbuffered and buffered channels with send/receive semantics.
+- select() — multiplex channel operations like Go's select statement.
 - Cond — condition variables.
 - Context — cancellation propagation and done/error semantics.
 
@@ -62,7 +63,31 @@ import { Channel } from 'golikejs';
 
 const ch = new Channel<number>(3);
 await ch.send(1);
-const v = await ch.receive();
+const [value, ok] = await ch.receive();
+```
+
+Channel select (multiplexing)
+
+```ts
+import { Channel, select } from 'golikejs';
+
+const ch1 = new Channel<string>();
+const ch2 = new Channel<number>();
+
+// Select from multiple channels
+let result: string | undefined;
+await select([
+  { channel: ch1, action: (value, ok) => { result = `ch1: ${value}`; } },
+  { channel: ch2, action: (value, ok) => { result = `ch2: ${value}`; } },
+  { channel: ch1, value: 'hello', action: () => { result = 'sent to ch1'; } }
+]);
+
+// Select with default (non-blocking)
+let defaultExecuted = false;
+await select([
+  { channel: ch1, action: () => {} },
+  { default: () => { defaultExecuted = true; result = 'no data available'; } }
+]);
 ```
 
 Context (cancellation)

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from '@jest/globals';
-import { Channel } from './channel.js';
+import { Channel, select } from './channel.js';
 
 describe('Channel', () => {
   it('should throw error for negative capacity', () => {
@@ -342,6 +342,103 @@ describe('Channel', () => {
 
       expect(maxInCs).toBeGreaterThan(0);
       expect(maxInCs).toBeLessThanOrEqual(1); // buffered capacity=1 acts like mutex
+    });
+  });
+
+  describe('select function', () => {
+    it('should select from multiple receive operations', async () => {
+      const ch1 = new Channel<number>();
+      const ch2 = new Channel<number>();
+
+      let receivedValue: number | undefined;
+      let receivedFrom: string | undefined;
+
+      // Send to ch1 first
+      setTimeout(() => ch1.send(42), 10);
+
+      await select([
+        { channel: ch1, action: (value, ok) => { receivedValue = value; receivedFrom = 'ch1'; } },
+        { channel: ch2, action: (value, ok) => { receivedValue = value; receivedFrom = 'ch2'; } }
+      ]);
+
+      expect(receivedFrom).toBe('ch1');
+      expect(receivedValue).toBe(42);
+    });
+
+    it('should select from multiple send operations', async () => {
+      const ch1 = new Channel<number>();
+      const ch2 = new Channel<number>();
+
+      let sentTo: string | undefined;
+
+      // Start receivers
+      setTimeout(async () => {
+        await ch1.receive();
+        await ch2.receive();
+      }, 10);
+
+      await select([
+        { channel: ch1, value: 100, action: () => { sentTo = 'ch1'; } },
+        { channel: ch2, value: 200, action: () => { sentTo = 'ch2'; } }
+      ]);
+
+      expect(sentTo).toBe('ch1');
+    });
+
+    it('should execute default case when no operations are ready', async () => {
+      const ch1 = new Channel<number>();
+      const ch2 = new Channel<number>();
+
+      let defaultExecuted = false;
+
+      await select([
+        { channel: ch1, action: () => {} },
+        { channel: ch2, action: () => {} },
+        { default: () => { defaultExecuted = true; } }
+      ]);
+
+      expect(defaultExecuted).toBe(true);
+    });
+
+    it('should not execute default when operations are ready', async () => {
+      const bufferedCh = new Channel<number>(1);
+
+      // Pre-fill buffered channel
+      await bufferedCh.send(42);
+
+      let defaultExecuted = false;
+      let receivedValue: number | undefined;
+
+      await select([
+        { channel: bufferedCh, action: (value, ok) => { receivedValue = value; } },
+        { default: () => { defaultExecuted = true; } }
+      ]);
+
+      expect(defaultExecuted).toBe(false);
+      expect(receivedValue).toBe(42);
+    });
+
+    it('should handle mixed receive and send operations', async () => {
+      const ch1 = new Channel<number>();
+      const ch2 = new Channel<number>();
+
+      let operation: string | undefined;
+
+      // Start a receiver for ch2
+      setTimeout(async () => {
+        await ch2.receive();
+      }, 5);
+
+      await select([
+        { channel: ch1, action: () => { operation = 'receive'; } },
+        { channel: ch2, value: 300, action: () => { operation = 'send'; } }
+      ]);
+
+      expect(operation).toBe('send');
+    });
+
+    it('should throw error when no cases provided', async () => {
+      await expect(select([])).rejects.toThrow('select: no cases provided');
     });
   });
 });
