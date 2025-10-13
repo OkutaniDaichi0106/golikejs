@@ -11,7 +11,7 @@ export class Channel<T> {
   #count = 0; // number of items in buffer
   #closed = false;
   #sendWaiters: Array<{ value: T; resolve: () => void }> = [];
-  #receiveWaiters: Array<{ resolve: (value: T) => void }> = [];
+  #receiveWaiters: Array<{ resolve: (value: [T, true] | [undefined, false]) => void }> = [];
 
   /**
    * Create a channel with the given capacity.
@@ -38,7 +38,7 @@ export class Channel<T> {
     if (this.#receiveWaiters.length > 0) {
       const waiter = this.#receiveWaiters.shift();
       if (waiter) {
-        waiter.resolve(value);
+        waiter.resolve([value, true]);
         return;
       }
     }
@@ -60,9 +60,9 @@ export class Channel<T> {
   }
 
   /**
-   * Receive a value from the channel. Blocks until a value is available or the channel is closed.
+   * Receive a value from the channel. Returns [value, true] if successful, or [undefined, false] if the channel is closed.
    */
-  async receive(): Promise<T> {
+  async receive(): Promise<[T, true] | [undefined, false]> {
     // If buffer has values, take from ring buffer
     if (this.#count > 0) {
       const buf = this.#buffer!;
@@ -71,7 +71,7 @@ export class Channel<T> {
       this.#head = (this.#head + 1) % this.#capacity;
       this.#count--;
       this.#processSendWaiters();
-      return value;
+      return [value, true];
     }
 
     // If there's a waiting sender, receive directly
@@ -79,17 +79,17 @@ export class Channel<T> {
       const waiter = this.#sendWaiters.shift();
       if (waiter) {
         waiter.resolve();
-        return waiter.value;
+        return [waiter.value, true];
       }
     }
 
-    // If channel is closed and no values, throw
+    // If channel is closed and no values, return closed signal
     if (this.#closed) {
-      throw new Error('Channel: receive from closed channel');
+      return [undefined, false];
     }
 
     // Otherwise, wait for a sender
-    return new Promise<T>((resolve) => {
+    return new Promise<[T, true] | [undefined, false]>((resolve) => {
       this.#receiveWaiters.push({ resolve });
     });
   }
@@ -110,12 +110,18 @@ export class Channel<T> {
       // For simplicity, we'll just clear the queue
     });
     this.#sendWaiters.length = 0;
+    
+    // Wake up all waiting receivers with closed signal
+    this.#receiveWaiters.forEach(waiter => {
+      waiter.resolve([undefined, false]);
+    });
+    this.#receiveWaiters.length = 0;
   }
 
   /**
-   * Try to receive a value without blocking. Returns undefined if no value is available.
+   * Try to receive a value without blocking. Returns [value, true] if successful, [undefined, false] if no value is available or channel is closed.
    */
-  tryReceive(): T | undefined {
+  tryReceive(): [T, true] | [undefined, false] {
     if (this.#count > 0) {
       const buf = this.#buffer!;
       const value = buf[this.#head]!;
@@ -123,18 +129,18 @@ export class Channel<T> {
       this.#head = (this.#head + 1) % this.#capacity;
       this.#count--;
       this.#processSendWaiters();
-      return value;
+      return [value, true];
     }
 
     if (this.#sendWaiters.length > 0) {
       const waiter = this.#sendWaiters.shift();
       if (waiter) {
         waiter.resolve();
-        return waiter.value;
+        return [waiter.value, true];
       }
     }
 
-    return undefined;
+    return [undefined, false];
   }
 
   /**
@@ -149,7 +155,7 @@ export class Channel<T> {
     if (this.#receiveWaiters.length > 0) {
       const waiter = this.#receiveWaiters.shift();
       if (waiter) {
-        waiter.resolve(value);
+        waiter.resolve([value, true]);
         return true;
       }
     }

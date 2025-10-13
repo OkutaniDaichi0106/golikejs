@@ -25,7 +25,8 @@ describe('Channel', () => {
       // Send should complete immediately since receiver is waiting
       await ch.send(42);
       
-      const value = await promise;
+      const [value, ok] = await promise;
+      expect(ok).toBe(true);
       expect(value).toBe(42);
     });
 
@@ -35,14 +36,17 @@ describe('Channel', () => {
       // Let send operation start waiting
       await new Promise(resolve => setTimeout(resolve, 10));
       
-      const value = await ch.receive();
+      const [value, ok] = await ch.receive();
+      expect(ok).toBe(true);
       expect(value).toBe(100);
       
       await sendPromise; // Should complete now
     });
 
     it('should handle tryReceive on empty channel', () => {
-      expect(ch.tryReceive()).toBeUndefined();
+      const [value, ok] = ch.tryReceive();
+      expect(ok).toBe(false);
+      expect(value).toBeUndefined();
     });
 
     it('should handle trySend with waiting receiver', async () => {
@@ -50,7 +54,8 @@ describe('Channel', () => {
       
       expect(ch.trySend(123)).toBe(true);
       
-      const value = await promise;
+      const [value, ok] = await promise;
+      expect(ok).toBe(true);
       expect(value).toBe(123);
     });
 
@@ -86,7 +91,8 @@ describe('Channel', () => {
       expect(ch.length).toBe(3); // Still full
       
       // Receive one to make space
-      const value = await ch.receive();
+      const [value, ok] = await ch.receive();
+      expect(ok).toBe(true);
       expect(value).toBe('a');
       expect(ch.length).toBe(3); // 'd' should have been added
       
@@ -97,10 +103,12 @@ describe('Channel', () => {
       await ch.send('x');
       await ch.send('y');
       
-      const value1 = await ch.receive();
-      const value2 = await ch.receive();
+      const [value1, ok1] = await ch.receive();
+      const [value2, ok2] = await ch.receive();
       
+      expect(ok1).toBe(true);
       expect(value1).toBe('x');
+      expect(ok2).toBe(true);
       expect(value2).toBe('y');
       expect(ch.length).toBe(0);
     });
@@ -108,8 +116,13 @@ describe('Channel', () => {
     it('should handle tryReceive with buffered values', async () => {
       await ch.send('test');
       
-      expect(ch.tryReceive()).toBe('test');
-      expect(ch.tryReceive()).toBeUndefined();
+      const [value, ok] = ch.tryReceive();
+      expect(ok).toBe(true);
+      expect(value).toBe('test');
+      
+      const [value2, ok2] = ch.tryReceive();
+      expect(ok2).toBe(false);
+      expect(value2).toBeUndefined();
     });
 
     it('should handle trySend with buffer space', () => {
@@ -139,20 +152,25 @@ describe('Channel', () => {
       expect(ch.send(1)).rejects.toThrow('Channel: send on closed channel');
     });
 
-    it('should throw error on receive from closed empty channel', async () => {
+    it('should return closed signal on receive from closed empty channel', async () => {
       ch.close();
-      expect(ch.receive()).rejects.toThrow('Channel: receive from closed channel');
+      const [value, ok] = await ch.receive();
+      expect(ok).toBe(false);
+      expect(value).toBeUndefined();
     });
 
     it('should receive remaining buffered values after close', async () => {
       await ch.send(99);
       ch.close();
       
-      const value = await ch.receive();
+      const [value, ok] = await ch.receive();
+      expect(ok).toBe(true);
       expect(value).toBe(99);
       
-      // Now should throw
-      expect(ch.receive()).rejects.toThrow('Channel: receive from closed channel');
+      // Now should return closed signal
+      const [value2, ok2] = await ch.receive();
+      expect(ok2).toBe(false);
+      expect(value2).toBeUndefined();
     });
 
     it('should handle trySend on closed channel', () => {
@@ -182,7 +200,10 @@ describe('Channel', () => {
       // Fan-out operation - process all available values
       const values: number[] = [];
       for (let i = 0; i < 4; i++) {
-        values.push(await input.receive());
+        const [value, ok] = await input.receive();
+        if (ok) {
+          values.push(value);
+        }
       }
       
       // Route values
@@ -195,8 +216,13 @@ describe('Channel', () => {
       }
       
       // Receive from outputs
-      const results1 = [await output1.receive(), await output1.receive()];
-      const results2 = [await output2.receive(), await output2.receive()];
+      const [r1_1, ok1_1] = await output1.receive();
+      const [r1_2, ok1_2] = await output1.receive();
+      const results1 = ok1_1 && ok1_2 ? [r1_1, r1_2] : [];
+      
+      const [r2_1, ok2_1] = await output2.receive();
+      const [r2_2, ok2_2] = await output2.receive();
+      const results2 = ok2_1 && ok2_2 ? [r2_1, r2_2] : [];
       
       expect(results1.sort()).toEqual([1, 3]);
       expect(results2.sort()).toEqual([2, 4]);
@@ -212,7 +238,8 @@ describe('Channel', () => {
         (async () => {
           try {
             while (true) {
-              const job = await jobs.receive();
+              const [job, ok] = await jobs.receive();
+              if (!ok) break; // Channel closed
               // Simulate processing
               await new Promise(resolve => setTimeout(resolve, 10));
               await results.send(job * 2);
@@ -231,7 +258,10 @@ describe('Channel', () => {
       // Collect results
       const collectedResults: number[] = [];
       for (let i = 0; i < 5; i++) {
-        collectedResults.push(await results.receive());
+        const [result, ok] = await results.receive();
+        if (ok) {
+          collectedResults.push(result);
+        }
       }
       
       jobs.close();
@@ -255,7 +285,8 @@ describe('Channel', () => {
       let maxConcurrent = 0;
 
       const worker = async () => {
-        await ch.receive(); // acquire
+        const [token, ok] = await ch.receive(); // acquire
+        if (!ok) return;
         concurrent++;
         maxConcurrent = Math.max(maxConcurrent, concurrent);
 
@@ -278,10 +309,12 @@ describe('Channel', () => {
       const ch = new Channel<number>(1);
       await ch.send(1);
 
-      const got = ch.tryReceive();
+      const [got, ok] = ch.tryReceive();
+      expect(ok).toBe(true);
       expect(got).toBe(1);
 
-      const got2 = ch.tryReceive();
+      const [got2, ok2] = ch.tryReceive();
+      expect(ok2).toBe(false);
       expect(got2).toBeUndefined();
     });
 
@@ -292,7 +325,8 @@ describe('Channel', () => {
       let maxInCs = 0;
 
       const worker = async () => {
-        await ch.receive();
+        const [token, ok] = await ch.receive();
+        if (!ok) return;
         inCs++;
         maxInCs = Math.max(maxInCs, inCs);
         await new Promise((r) => setTimeout(r, 5));
