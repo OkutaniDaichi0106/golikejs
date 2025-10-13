@@ -1,6 +1,6 @@
 {
   "name": "golikejs",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Reimplementations of Go standard packages (e.g. sync, context) for JavaScript/TypeScript",
   "type": "module",
   "types": "dist/index.d.ts",
