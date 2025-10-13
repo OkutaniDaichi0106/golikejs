@@ -6,12 +6,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on "Keep a Changelog" and this project adheres to Semantic Versioning.
 
-## [Unreleased]
+## [0.2.0] - 2025-01-15
 
 ### Changed
 
 - **Channel package separation**: Moved `Channel` from `sync` package to separate `channel` package following Go conventions.
 - **Channel receive API**: Changed `receive()` and `tryReceive()` methods to return Go-style tuple `[T, true] | [undefined, false]` instead of throwing errors for closed channels.
+
+## [Unreleased]
 
 ## [0.1.9] - 2025-01-15
 
