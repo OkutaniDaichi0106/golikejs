@@ -27,6 +27,7 @@ coverage/
 # IDE/editor
 .vscode/
 .idea/
+.github/prompts/
 
 # OS files
 .DS_Store

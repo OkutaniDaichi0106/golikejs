@@ -1,4 +1,4 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import { Mutex } from './mutex.js';
 import { Cond } from './cond.js';
 

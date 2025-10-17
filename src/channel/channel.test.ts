@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from '@jest/globals';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { Channel, select, receive, send, default_ } from './channel.js';
 
 describe('Channel', () => {
