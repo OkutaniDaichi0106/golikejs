@@ -8,6 +8,7 @@ import {
     withCancelCause,
     withTimeout,
     watchPromise,
+    afterFunc,
     ContextCancelledError,
     ContextTimeoutError
 } from './context';
@@ -373,6 +374,150 @@ describe('Context', () => {
             await new Promise((r) => setTimeout(r, 10));
 
             expect(signalled).toBe(true);
+        });
+    });
+
+    describe('afterFunc', () => {
+        it('should execute callback when context is cancelled', async () => {
+            const [ctx, cancel] = withCancel(background());
+            let called = false;
+
+            const stop = afterFunc(ctx, () => {
+                called = true;
+            });
+
+            expect(called).toBe(false);
+            cancel();
+
+            await new Promise((r) => setTimeout(r, 10));
+            expect(called).toBe(true);
+        });
+
+        it('should return true when stop is called before execution', async () => {
+            const [ctx, cancel] = withCancel(background());
+            let called = false;
+
+            const stop = afterFunc(ctx, () => {
+                called = true;
+            });
+
+            const stopped = stop();
+            expect(stopped).toBe(true);
+            expect(called).toBe(false);
+
+            cancel();
+            await new Promise((r) => setTimeout(r, 10));
+            expect(called).toBe(false);
+        });
+
+        it('should return false when stop is called after execution', async () => {
+            const [ctx, cancel] = withCancel(background());
+            let called = false;
+
+            const stop = afterFunc(ctx, () => {
+                called = true;
+            });
+
+            cancel();
+            await new Promise((r) => setTimeout(r, 10));
+            expect(called).toBe(true);
+
+            const stopped = stop();
+            expect(stopped).toBe(false);
+        });
+
+        it('should return false on second stop call', async () => {
+            const [ctx, cancel] = withCancel(background());
+            let called = false;
+
+            const stop = afterFunc(ctx, () => {
+                called = true;
+            });
+
+            const stopped1 = stop();
+            expect(stopped1).toBe(true);
+
+            const stopped2 = stop();
+            expect(stopped2).toBe(false);
+
+            cancel();
+            await new Promise((r) => setTimeout(r, 10));
+            expect(called).toBe(false);
+        });
+
+        it('should handle async callbacks', async () => {
+            const [ctx, cancel] = withCancel(background());
+            let called = false;
+
+            const stop = afterFunc(ctx, async () => {
+                await new Promise((r) => setTimeout(r, 5));
+                called = true;
+            });
+
+            cancel();
+            await new Promise((r) => setTimeout(r, 20));
+            expect(called).toBe(true);
+        });
+
+        it('should propagate parent context cancellation', async () => {
+            const [parentCtx, parentCancel] = withCancel(background());
+            const [childCtx, childCancel] = withCancel(parentCtx);
+            let called = false;
+
+            const stop = afterFunc(childCtx, () => {
+                called = true;
+            });
+
+            parentCancel();
+            await new Promise((r) => setTimeout(r, 10));
+
+            expect(called).toBe(true);
+            expect(stop()).toBe(false);
+        });
+
+        it('should handle errors in callback gracefully', async () => {
+            const [ctx, cancel] = withCancel(background());
+            let called = false;
+
+            const stop = afterFunc(ctx, async () => {
+                called = true;
+                throw new Error('Test error');
+            });
+
+            cancel();
+            await new Promise((r) => setTimeout(r, 10));
+            expect(called).toBe(true);
+            // No error should be thrown
+        });
+
+        it('should work with withTimeout context', async () => {
+            const ctx = withTimeout(background(), 20);
+            let called = false;
+
+            const stop = afterFunc(ctx, () => {
+                called = true;
+            });
+
+            await new Promise((r) => setTimeout(r, 40));
+            expect(called).toBe(true);
+        });
+
+        it('should work with watchPromise context', async () => {
+            let resolvePromise: () => void;
+            const promise = new Promise<void>((resolve) => {
+                resolvePromise = resolve;
+            });
+
+            const ctx = watchPromise(background(), promise);
+            let called = false;
+
+            const stop = afterFunc(ctx, () => {
+                called = true;
+            });
+
+            resolvePromise!();
+            await new Promise((r) => setTimeout(r, 10));
+            expect(called).toBe(true);
         });
     });
 });

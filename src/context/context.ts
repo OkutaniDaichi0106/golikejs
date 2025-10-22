@@ -199,6 +199,53 @@ export function watchPromise<T>(parent: Context, promise: Promise<T>): Context {
     return context;
 }
 
+class AfterFuncContext extends DefaultContext {
+    #fn?: (() => void | Promise<void>);
+    #executed = false;
+
+    constructor(parent: Context, fn: () => void | Promise<void>) {
+        super(parent);
+        this.#fn = fn;
+
+        // When the parent context finishes, execute the function
+        parent.done().then(() => {
+            this.#executeFunc();
+        });
+    }
+
+    #executeFunc(): void {
+        if (this.#executed || this.#fn === undefined) {
+            return;
+        }
+        this.#executed = true;
+        const fn = this.#fn;
+        this.#fn = undefined;
+
+        // Execute the function without awaiting (fire-and-forget)
+        // to match Go's behavior of running in a separate goroutine
+        const result = fn();
+        if (result instanceof Promise) {
+            result.catch(() => {
+                // Silently ignore errors during execution
+            });
+        }
+    }
+
+    stop(): boolean {
+        if (this.#executed || this.#fn === undefined) {
+            return false;
+        }
+        this.#executed = true;
+        this.#fn = undefined;
+        return true;
+    }
+}
+
+export function afterFunc(parent: Context, fn: () => void | Promise<void>): () => boolean {
+    const ctx = new AfterFuncContext(parent, fn);
+    
+    return () => ctx.stop();
+}
 /**
  * Convert a Context into an AbortSignal for integration with fetch / Web APIs.
  */
