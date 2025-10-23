@@ -6,6 +6,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on "Keep a Changelog" and this project adheres to Semantic Versioning.
 
+## [0.3.2] - 2025-10-22
+
+### Added
+
+- **`afterFunc()` function**: Added Go-style `context.AfterFunc` implementation to the context package for registering cleanup callbacks that execute when a context is cancelled or finished.
+  - Returns a `stop()` function to prevent callback execution before it runs
+  - Supports both synchronous and asynchronous callbacks
+  - Errors in callbacks are silently ignored (fire-and-forget execution)
+  - Works seamlessly with all context creation functions (`withCancel`, `withTimeout`, `watchPromise`, etc.)
+
 ## [0.3.1] - 2025-10-13
 
 ### Performance
