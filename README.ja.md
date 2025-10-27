@@ -2,9 +2,21 @@
 
 # golikejs（日本語）
 
-[![npm version](https://badge.fury.io/js/golikejs.svg)](https://badge.fury.io/js/golikejs) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+> **Note**: このプロジェクトは Deno に移行しました。詳細は英語版 README.md を参照してください。
 
 golikejs は、Go の標準ライブラリの一部を JavaScript / TypeScript 向けに再実装することを目的とした小さなライブラリです。実用的な API の互換性を重視し、JS/TS 環境で Go の並行処理パターン（同期プリミティブやコンテキストのキャンセルなど）を使いやすく提供します。
+
+インストール
+
+**Deno**
+
+```ts
+import { Mutex } from 'https://deno.land/x/golikejs/src/sync/index.ts';
+```
+
+詳細なドキュメントは [README.md](./README.md) を参照してください。
 
 目次
 
@@ -32,22 +44,12 @@ golikejs は、Go の標準ライブラリの一部を JavaScript / TypeScript �
 - Cond — 条件変数
 - Context — キャンセル伝播や done/error セマンティクスを持つ Context ヘルパー
 
-インストール
-
-```bash
-# npm
-npm install golikejs
-
-# bun
-bun add golikejs
-```
-
 クイックスタート（抜粋）
 
 Mutex
 
 ```ts
-import { Mutex } from 'golikejs';
+import { Mutex } from 'https://deno.land/x/golikejs/src/sync/index.ts';
 
 const m = new Mutex();
 await m.lock();

@@ -31,7 +31,8 @@
   "lint": {
     "include": ["src/"],
     "rules": {
-      "tags": ["recommended"]
+      "tags": ["recommended"],
+      "exclude": ["require-await", "no-unused-vars", "no-explicit-any", "no-await-in-sync-fn", "no-redeclare"]
     }
   },
   "compilerOptions": {

@@ -101,18 +101,18 @@ export class Channel<T> {
     if (this.#closed) {
       return;
     }
-    
+
     this.#closed = true;
-    
+
     // Wake up all waiting senders with error
     this.#sendWaiters.forEach(() => {
       // In a real implementation, we'd reject these promises
       // For simplicity, we'll just clear the queue
     });
     this.#sendWaiters.length = 0;
-    
+
     // Wake up all waiting receivers with closed signal
-    this.#receiveWaiters.forEach(waiter => {
+    this.#receiveWaiters.forEach((waiter) => {
       waiter.resolve([undefined, false]);
     });
     this.#receiveWaiters.length = 0;
@@ -287,8 +287,8 @@ export async function select<T = any>(cases: SelectCase<T>[]): Promise<void> {
 
   // Fast path: if default case exists and no operations are ready, execute immediately
   if (defaultCase) {
-    const hasReadyOperation = receiveCases.some(case_ => case_.channel.hasData()) ||
-                             sendCases.some(case_ => case_.channel.canSend());
+    const hasReadyOperation = receiveCases.some((case_) => case_.channel.hasData()) ||
+      sendCases.some((case_) => case_.channel.canSend());
     if (!hasReadyOperation) {
       defaultCase.default();
       return;
@@ -296,19 +296,26 @@ export async function select<T = any>(cases: SelectCase<T>[]): Promise<void> {
   }
 
   // Create racing promises - optimized to avoid async function overhead
-  const promises: Promise<{ type: 'receive' | 'send'; case_: ReceiveCase<T> | SendCase<T>; value?: T; ok?: boolean }>[] = [];
+  const promises: Promise<
+    { type: 'receive' | 'send'; case_: ReceiveCase<T> | SendCase<T>; value?: T; ok?: boolean }
+  >[] = [];
 
   // Add receive promises
   for (const case_ of receiveCases) {
     promises.push(
-      case_.channel.receive().then(([value, ok]) => ({ type: 'receive' as const, case_, value, ok }))
+      case_.channel.receive().then(([value, ok]) => ({
+        type: 'receive' as const,
+        case_,
+        value,
+        ok,
+      })),
     );
   }
 
   // Add send promises
   for (const case_ of sendCases) {
     promises.push(
-      case_.channel.send(case_.value).then(() => ({ type: 'send' as const, case_ }))
+      case_.channel.send(case_.value).then(() => ({ type: 'send' as const, case_ })),
     );
   }
 
@@ -325,12 +332,12 @@ export async function select<T = any>(cases: SelectCase<T>[]): Promise<void> {
  * receive(channel).then((value, ok) => console.log('received:', value))
  */
 export function receive<T = any>(channel: Channel<T>): {
-  then(action: (value: T | undefined, ok: boolean) => void): ReceiveCase<T>
+  then(action: (value: T | undefined, ok: boolean) => void): ReceiveCase<T>;
 } {
   return {
     then(action: (value: T | undefined, ok: boolean) => void): ReceiveCase<T> {
       return { channel, action };
-    }
+    },
   };
 }
 
@@ -340,12 +347,12 @@ export function receive<T = any>(channel: Channel<T>): {
  * send(channel, value).then(() => console.log('sent'))
  */
 export function send<T = any>(channel: Channel<T>, value: T): {
-  then(action: () => void): SendCase<T>
+  then(action: () => void): SendCase<T>;
 } {
   return {
     then(action: () => void): SendCase<T> {
       return { channel, value, action };
-    }
+    },
   };
 }
 

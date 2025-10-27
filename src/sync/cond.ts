@@ -54,7 +54,7 @@ export class Cond {
   broadcast(): void {
     if (this.#waiters.length > 0) {
       const waiters = this.#waiters.splice(0);
-      waiters.forEach(waiter => {
+      waiters.forEach((waiter) => {
         // Use setTimeout to avoid immediate execution
         setTimeout(waiter, 0);
       });

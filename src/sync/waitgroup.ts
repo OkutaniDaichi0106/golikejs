@@ -13,15 +13,15 @@ export class WaitGroup {
    */
   add(delta: number): void {
     this.#counter += delta;
-    
+
     if (this.#counter < 0) {
       throw new Error('WaitGroup: negative counter');
     }
-    
+
     if (this.#counter === 0) {
       // Wake up all waiters
       const waiters = this.#waiters.splice(0);
-      waiters.forEach(waiter => waiter());
+      waiters.forEach((waiter) => waiter());
     }
   }
 
@@ -52,7 +52,7 @@ export class WaitGroup {
    */
   async go(fn: () => Promise<void> | void): Promise<void> {
     this.add(1);
-    
+
     try {
       await fn();
     } finally {

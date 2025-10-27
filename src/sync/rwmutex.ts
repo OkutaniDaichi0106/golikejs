@@ -98,7 +98,7 @@ export class RWMutex {
     } else if (this.#readWaitQueue.length > 0 && !this.#writeLocked) {
       // Wake up all waiting readers
       const readers = this.#readWaitQueue.splice(0);
-      readers.forEach(reader => reader());
+      readers.forEach((reader) => reader());
     }
   }
 

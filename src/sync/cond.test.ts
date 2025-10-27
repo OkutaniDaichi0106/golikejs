@@ -1,6 +1,6 @@
 import { Mutex } from './mutex.ts';
 import { Cond } from './cond.ts';
-import { assertEquals, assert } from './_test_util.ts';
+import { assert, assertEquals } from './_test_util.ts';
 
 // Tests for Cond (condition variable) behavior
 
@@ -58,7 +58,6 @@ Deno.test('Cond - signal wakes only one waiter', async () => {
   // Give them time to queue
   await new Promise((r) => setTimeout(r, 10));
   assert(c.waitersCount >= 3);
-
 
   // Acquire mutex, then wake one waiter and release
   await m.lock();

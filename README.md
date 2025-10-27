@@ -1,7 +1,7 @@
 
 # golikejs
 
-[![npm version](https://badge.fury.io/js/golikejs.svg)](https://badge.fury.io/js/golikejs) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 golikejs reimplements selected parts of Go's standard library for JavaScript and TypeScript runtimes. The goal is practical API parity where it makes sense, so you can use familiar concurrency and context patterns from Go in JS/TS projects. The project is intentionally small and focused: it reproduces commonly used primitives (sync, context, channels, semaphores, etc.) and keeps semantics close to Go's originals.
 
@@ -17,8 +17,7 @@ Table of contents
   - Semaphore
   - WaitGroup
 - API summary
-- Build & testing
-- Publishing
+- Development
 - Contributing
 - License
 
@@ -34,10 +33,20 @@ Features
 
 Installation
 
+**Deno**
+
+```ts
+import { Mutex } from 'https://deno.land/x/golikejs/src/sync/index.ts';
+// or use specific version
+import { Mutex } from 'https://deno.land/x/golikejs@v0.4.0/src/sync/index.ts';
+```
+
+**npm (Node.js, Bun)**
+
+Note: npm support is being phased out. For npm users, you can still use version 0.4.0 or earlier:
+
 ```bash
-npm install golikejs
-# or with bun
-bun add golikejs
+npm install golikejs@0.4.0
 ```
 
 Quick examples
@@ -45,7 +54,7 @@ Quick examples
 Mutex
 
 ```ts
-import { Mutex } from 'golikejs';
+import { Mutex } from 'https://deno.land/x/golikejs/src/sync/index.ts';
 
 const m = new Mutex();
 await m.lock();
@@ -59,7 +68,7 @@ try {
 Channel (buffered)
 
 ```ts
-import { Channel } from 'golikejs';
+import { Channel } from 'https://deno.land/x/golikejs/src/channel/index.ts';
 
 const ch = new Channel<number>(3);
 await ch.send(1);
@@ -69,7 +78,7 @@ const [value, ok] = await ch.receive();
 Channel select (multiplexing)
 
 ```ts
-import { Channel, select, receive, send, default_ } from 'golikejs';
+import { Channel, select, receive, send, default_ } from 'https://deno.land/x/golikejs/src/channel/index.ts';
 
 const ch1 = new Channel<string>();
 const ch2 = new Channel<number>();
@@ -95,7 +104,7 @@ await select([
 Context (cancellation)
 
 ```ts
-import { context } from 'golikejs';
+import { context } from 'https://deno.land/x/golikejs/src/context/index.ts';
 
 const ctx = context.withCancel(context.Background());
 // some async work that listens for cancellation
@@ -110,7 +119,7 @@ ctx.cancel(new Error('shutdown'));
 Cond
 
 ```ts
-import { Cond, Mutex } from 'golikejs';
+import { Cond, Mutex } from 'https://deno.land/x/golikejs/src/sync/index.ts';
 
 const mu = new Mutex();
 const cond = new Cond(mu);
@@ -135,7 +144,7 @@ try {
 Semaphore
 
 ```ts
-import { Semaphore } from 'golikejs';
+import { Semaphore } from 'https://deno.land/x/golikejs/src/sync/index.ts';
 
 const s = new Semaphore(2);
 await s.acquire();
@@ -149,7 +158,7 @@ try {
 WaitGroup
 
 ```ts
-import { WaitGroup } from 'golikejs';
+import { WaitGroup } from 'https://deno.land/x/golikejs/src/sync/index.ts';
 
 const wg = new WaitGroup();
 wg.add(1);
@@ -174,26 +183,43 @@ API summary
 - Cond: `wait()`, `signal()`, `broadcast()`
 - Context helpers in `context` module: `Background()`, `withCancel()`, `withTimeout()`, and `withDeadline()` (see source API for details)
 
-Build & testing
+Development
 
-- Run tests with Bun (recommended):
+This project uses Deno for development and testing.
+
+**Prerequisites**
+
+- [Deno](https://deno.land/) 2.x or later
+
+**Run tests**
 
 ```bash
-bun test
+deno task test
 ```
 
-- Build (if needed):
+**Run tests with coverage**
 
 ```bash
-bun run build
+deno task test:coverage
 ```
 
-Publishing
+**Format code**
 
-The repository contains a GitHub Actions workflow that can publish the package to npm when a release is created or a `v*` tag is pushed. To enable automated publishing:
+```bash
+deno task fmt
+```
 
-1. Create an npm token (Settings → Access Tokens on npmjs.com) and add it to your GitHub repository secrets as `NPM_TOKEN`.
-2. Push a tag such as `v1.0.0` or create a GitHub Release. The `publish` workflow will run and publish to npm with the configured token.
+**Lint code**
+
+```bash
+deno task lint
+```
+
+**Type check**
+
+```bash
+deno task check
+```
 
 Contributing
 
