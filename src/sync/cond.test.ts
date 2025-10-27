@@ -1,64 +1,63 @@
-import { describe, it, expect } from 'vitest';
-import { Mutex } from './mutex.js';
-import { Cond } from './cond.js';
+import { Mutex } from './mutex.ts';
+import { Cond } from './cond.ts';
+import { assertEquals, assert } from './_test_util.ts';
 
 // Tests for Cond (condition variable) behavior
 
-describe('Cond', () => {
-  it('wait releases mutex and reacquires it after signal', async () => {
-    const m = new Mutex();
-    const c = new Cond(m);
+Deno.test('Cond - wait releases mutex and reacquires it after signal', async () => {
+  const m = new Mutex();
+  const c = new Cond(m);
 
-    let waiterAcquired = false;
+  let waiterAcquired = false;
 
-    // Start a waiter that will acquire the mutex, then call wait()
-    const waiter = (async () => {
-      await m.lock();
-      // This will release the mutex and wait; when it returns it will have reacquired the mutex
-      await c.wait();
-      waiterAcquired = true;
-      // release immediately
-      m.unlock();
-    })();
-
-    // Give the waiter a tick to acquire and call wait (which unlocks)
-    await new Promise((r) => setTimeout(r, 10));
-
-    // At this point, the waiter should have released the mutex, so main can lock
+  // Start a waiter that will acquire the mutex, then call wait()
+  const waiter = (async () => {
     await m.lock();
-
-    // Now signal the waiter while holding the mutex
-    c.signal();
-
-    // release our lock so waiter can proceed and reacquire
+    // This will release the mutex and wait; when it returns it will have reacquired the mutex
+    await c.wait();
+    waiterAcquired = true;
+    // release immediately
     m.unlock();
+  })();
 
-    // wait for waiter to finish
-    await waiter;
+  // Give the waiter a tick to acquire and call wait (which unlocks)
+  await new Promise((r) => setTimeout(r, 10));
 
-    // ensure waiter reacquired the mutex and then returned
-    expect(waiterAcquired).toBe(true);
-  });
+  // At this point, the waiter should have released the mutex, so main can lock
+  await m.lock();
 
-  it('signal wakes only one waiter', async () => {
-    const m = new Mutex();
-    const c = new Cond(m);
+  // Now signal the waiter while holding the mutex
+  c.signal();
 
-    // Start multiple waiters (each will acquire the mutex and then wait)
-    let woke = 0;
+  // release our lock so waiter can proceed and reacquire
+  m.unlock();
 
-    const makeWaiter = async () => {
-      await m.lock();
-      await c.wait();
-      woke++;
-      m.unlock();
-    };
+  // wait for waiter to finish
+  await waiter;
+
+  // ensure waiter reacquired the mutex and then returned
+  assertEquals(waiterAcquired, true);
+});
+
+Deno.test('Cond - signal wakes only one waiter', async () => {
+  const m = new Mutex();
+  const c = new Cond(m);
+
+  // Start multiple waiters (each will acquire the mutex and then wait)
+  let woke = 0;
+
+  const makeWaiter = async () => {
+    await m.lock();
+    await c.wait();
+    woke++;
+    m.unlock();
+  };
 
   const waiters = [makeWaiter(), makeWaiter(), makeWaiter()];
 
-    // Give them time to queue
-    await new Promise((r) => setTimeout(r, 10));
-    expect(c.waitersCount).toBeGreaterThanOrEqual(3);
+  // Give them time to queue
+  await new Promise((r) => setTimeout(r, 10));
+  assert(c.waitersCount >= 3);
 
 
   // Acquire mutex, then wake one waiter and release
@@ -66,56 +65,55 @@ describe('Cond', () => {
   c.signal();
   m.unlock();
 
-    // Give some time for one to wake
-    await new Promise((r) => setTimeout(r, 20));
+  // Give some time for one to wake
+  await new Promise((r) => setTimeout(r, 20));
 
-    expect(woke).toBe(1);
+  assertEquals(woke, 1);
 
-    // cleanup: broadcast to wake remaining and ensure they finish
+  // cleanup: broadcast to wake remaining and ensure they finish
+  await m.lock();
+  c.broadcast();
+  m.unlock();
+  await Promise.all(waiters);
+});
+
+Deno.test('Cond - broadcast wakes all waiters', async () => {
+  const m = new Mutex();
+  const c = new Cond(m);
+
+  let woke = 0;
+  const makeWaiter = async () => {
     await m.lock();
-    c.broadcast();
+    await c.wait();
+    woke++;
     m.unlock();
-    await Promise.all(waiters);
-  });
+  };
 
-  it('broadcast wakes all waiters', async () => {
-    const m = new Mutex();
-    const c = new Cond(m);
+  const waiters = [makeWaiter(), makeWaiter(), makeWaiter(), makeWaiter()];
 
-    let woke = 0;
-    const makeWaiter = async () => {
-      await m.lock();
-      await c.wait();
-      woke++;
-      m.unlock();
-    };
+  await new Promise((r) => setTimeout(r, 10));
+  assert(c.waitersCount >= 4);
 
-    const waiters = [makeWaiter(), makeWaiter(), makeWaiter(), makeWaiter()];
+  await m.lock();
+  c.broadcast();
+  m.unlock();
 
-    await new Promise((r) => setTimeout(r, 10));
-    expect(c.waitersCount).toBeGreaterThanOrEqual(4);
+  // Wait a bit for all to wake
+  await new Promise((r) => setTimeout(r, 10));
 
-    await m.lock();
-    c.broadcast();
-    m.unlock();
+  assertEquals(woke, 4);
 
-    // Wait a bit for all to wake
-    await new Promise((r) => setTimeout(r, 10));
+  // ensure all finished
+  await Promise.all(waiters);
+});
 
-    expect(woke).toBe(4);
+Deno.test('Cond - signal/broadcast are no-ops when no waiters', () => {
+  const m = new Mutex();
+  const c = new Cond(m);
 
-    // ensure all finished
-    await Promise.all(waiters);
-  });
+  // Should not throw
+  c.signal();
+  c.broadcast();
 
-  it('signal/broadcast are no-ops when no waiters', () => {
-    const m = new Mutex();
-    const c = new Cond(m);
-
-    // Should not throw
-    c.signal();
-    c.broadcast();
-
-    expect(c.waitersCount).toBe(0);
-  });
+  assertEquals(c.waitersCount, 0);
 });

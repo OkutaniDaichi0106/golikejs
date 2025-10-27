@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { assertEquals, assert, assertThrows } from './_test_util.ts';
 import type { Context } from './context';
 import {
     background,
@@ -13,37 +13,31 @@ import {
     ContextTimeoutError
 } from './context';
 
-describe('Context', () => {
-    describe('background', () => {
-        it('should create a background context', () => {
+        Deno.test('background - should create a background context', () => {
             const ctx = background();
-            expect(ctx).toBeDefined();
-            expect(ctx.err()).toBeUndefined();
-        });
+            assert(ctx !== undefined);
+            assertEquals(ctx.err(), undefined);
 
-        it('should return the same instance on multiple calls', () => {
+        Deno.test('background - should return the same instance on multiple calls', () => {
             const ctx1 = background();
             const ctx2 = background();
-            expect(ctx1).toBe(ctx2);
-        });
+            assertEquals(ctx1, ctx2);
 
-        it('should not be aborted initially', () => {
+        Deno.test('should not be aborted initially', () => {
             const ctx = background();
-            expect(ctx.err()).toBeUndefined();
+            assertEquals(ctx.err(), undefined);
         });
     });
 
-    describe('watchSignal', () => {
-        it('should create a context with custom signal', () => {
+        Deno.test('watchSignal - should create a context with custom signal', () => {
             const parentCtx = background();
             const controller = new AbortController();
             const childCtx = watchSignal(parentCtx, controller.signal);
             
-            expect(childCtx).toBeDefined();
-            expect(childCtx.err()).toBeUndefined();
-        });
+            assert(childCtx !== undefined);
+            assertEquals(childCtx.err(), undefined);
 
-        it('should be cancelled when custom signal is aborted', async () => {
+        Deno.test('should be cancelled when custom signal is aborted', async () => {
             const parentCtx = background();
             const controller = new AbortController();
             const childCtx = watchSignal(parentCtx, controller.signal);
@@ -56,21 +50,21 @@ describe('Context', () => {
             // Wait a bit for async operations
             await new Promise(resolve => setTimeout(resolve, 10));
             
-            expect(done).toBe(true);
-            expect(childCtx.err()).toBeInstanceOf(Error);
+            assertEquals(done, true);
+            assert(childCtx.err() instanceof Error);
         });
 
-        it('should handle already aborted signal', () => {
+        Deno.test('should handle already aborted signal', () => {
             const parentCtx = background();
             const controller = new AbortController();
             const testError = new Error('Already aborted');
             controller.abort(testError);
             
             const childCtx = watchSignal(parentCtx, controller.signal);
-            expect(childCtx.err()).toBeInstanceOf(Error);
+            assert(childCtx.err() instanceof Error);
         });
 
-        it('should remove listener when context ends earlier', async () => {
+        Deno.test('should remove listener when context ends earlier', async () => {
             const parentCtx = background();
             const controller = new AbortController();
             const childCtx = watchSignal(parentCtx, controller.signal);
@@ -85,21 +79,19 @@ describe('Context', () => {
             // No error should be thrown when aborting controller later
             controller.abort(new Error('Should be ignored'));
             await new Promise(resolve => setTimeout(resolve, 1));
-            expect(true).toBe(true); // reach here without uncaught errors
+            assertEquals(true, true); // reach here without uncaught errors
         });
     });
 
-    describe('withCancel', () => {
-        it('should create a cancellable context', () => {
+        Deno.test('withCancel - should create a cancellable context', () => {
             const parentCtx = background();
             const [childCtx, cancel] = withCancel(parentCtx);
             
-            expect(childCtx).toBeDefined();
-            expect(childCtx.err()).toBeUndefined();
-            expect(typeof cancel).toBe('function');
-        });
+            assert(childCtx !== undefined);
+            assertEquals(childCtx.err(), undefined);
+            assertEquals(typeof cancel, 'function');
 
-        it('should cancel the context when cancel function is called', async () => {
+        Deno.test('should cancel the context when cancel function is called', async () => {
             const parentCtx = background();
             const [childCtx, cancel] = withCancel(parentCtx);
             
@@ -111,11 +103,11 @@ describe('Context', () => {
             // Wait a bit for async operations
             await new Promise(resolve => setTimeout(resolve, 10));
             
-            expect(done).toBe(true);
-            expect(childCtx.err()).toBeInstanceOf(Error);
+            assertEquals(done, true);
+            assert(childCtx.err() instanceof Error);
         });
 
-        it('should be cancelled when parent is cancelled', async () => {
+        Deno.test('should be cancelled when parent is cancelled', async () => {
             const [parentCtx, parentCancel] = withCancel(background());
             const [childCtx, ] = withCancel(parentCtx);
             
@@ -127,22 +119,20 @@ describe('Context', () => {
             // Wait a bit for async operations
             await new Promise(resolve => setTimeout(resolve, 10));
             
-            expect(childDone).toBe(true);
-            expect(childCtx.err()).toBeInstanceOf(Error);
+            assertEquals(childDone, true);
+            assert(childCtx.err() instanceof Error);
         });
     });
 
-    describe('withCancelCause', () => {
-        it('should create a cancellable context with custom error', () => {
+        Deno.test('withCancelCause - should create a cancellable context with custom error', () => {
             const parentCtx = background();
             const [childCtx, cancelWithCause] = withCancelCause(parentCtx);
             
-            expect(childCtx).toBeDefined();
-            expect(childCtx.err()).toBeUndefined();
-            expect(typeof cancelWithCause).toBe('function');
-        });
+            assert(childCtx !== undefined);
+            assertEquals(childCtx.err(), undefined);
+            assertEquals(typeof cancelWithCause, 'function');
 
-        it('should cancel with custom error', async () => {
+        Deno.test('should cancel with custom error', async () => {
             const parentCtx = background();
             const [childCtx, cancelWithCause] = withCancelCause(parentCtx);
             
@@ -151,7 +141,7 @@ describe('Context', () => {
             
             childCtx.done().then(() => { 
                 done = true; 
-                expect(childCtx.err()).toBe(customError);
+                assertEquals(childCtx.err(), customError);
             });
             
             cancelWithCause(customError);
@@ -159,10 +149,10 @@ describe('Context', () => {
             // Wait a bit for async operations
             await new Promise(resolve => setTimeout(resolve, 10));
             
-            expect(done).toBe(true);
+            assertEquals(done, true);
         });
 
-        it('should handle undefined error', async () => {
+        Deno.test('should handle undefined error', async () => {
             const parentCtx = background();
             const [childCtx, cancelWithCause] = withCancelCause(parentCtx);
             
@@ -174,20 +164,18 @@ describe('Context', () => {
             // Wait a bit for async operations
             await new Promise(resolve => setTimeout(resolve, 10));
             
-            expect(done).toBe(true);
+            assertEquals(done, true);
         });
     });
 
-    describe('withTimeout', () => {
-        it('should create a context with timeout', () => {
+        Deno.test('withTimeout - should create a context with timeout', () => {
             const parentCtx = background();
             const childCtx = withTimeout(parentCtx, 1000);
             
-            expect(childCtx).toBeDefined();
-            expect(childCtx.err()).toBeUndefined();
-        });
+            assert(childCtx !== undefined);
+            assertEquals(childCtx.err(), undefined);
 
-        it('should cancel after timeout', async () => {
+        Deno.test('should cancel after timeout', async () => {
             const parentCtx = background();
             const childCtx = withTimeout(parentCtx, 50);
             
@@ -202,14 +190,14 @@ describe('Context', () => {
             // Wait longer than timeout
             await new Promise(resolve => setTimeout(resolve, 50));
             
-            expect(done).toBe(true);
-            expect(caughtError).toBeInstanceOf(Error);
+            assertEquals(done, true);
+            assert(caughtError instanceof Error);
             if (caughtError instanceof Error) {
-                expect(caughtError.message).toContain('timeout');
+                assert(caughtError.message.includes('timeout'));
             }
         });
 
-        it('should not timeout if parent is cancelled first', async () => {
+        Deno.test('should not timeout if parent is cancelled first', async () => {
             const [parentCtx, parentCancel] = withCancel(background());
             const childCtx = withTimeout(parentCtx, 1000);
             
@@ -222,12 +210,11 @@ describe('Context', () => {
             // Wait a bit for async operations
             await new Promise(resolve => setTimeout(resolve, 10));
             
-            expect(done).toBe(true);
+            assertEquals(done, true);
         });
     });
 
-    describe('watchPromise', () => {
-        it('should create a context that cancels when promise resolves', async () => {
+        Deno.test('watchPromise - should create a context that cancels when promise resolves', async () => {
             const parentCtx = background();
             const promise = Promise.resolve('test value');
             const childCtx = watchPromise(parentCtx, promise);
@@ -238,11 +225,10 @@ describe('Context', () => {
             // Wait for promise to resolve
             await new Promise(resolve => setTimeout(resolve, 10));
             
-            expect(done).toBe(true);
-            expect(childCtx.err()).toBeUndefined();
-        });
+            assertEquals(done, true);
+            assertEquals(childCtx.err(), undefined);
 
-        it('should create a context that cancels when promise rejects', async () => {
+        Deno.test('should create a context that cancels when promise rejects', async () => {
             const parentCtx = background();
             const testError = new Error('Promise rejected');
             const promise = Promise.reject(testError);
@@ -259,11 +245,11 @@ describe('Context', () => {
             // Wait for promise to reject
             await new Promise(resolve => setTimeout(resolve, 10));
             
-            expect(done).toBe(true);
-            expect(error).toBeInstanceOf(Error);
+            assertEquals(done, true);
+            assert(error instanceof Error);
         });
 
-        it('should handle non-Error rejection reasons', async () => {
+        Deno.test('should handle non-Error rejection reasons', async () => {
             const parentCtx = background();
             const promise = Promise.reject('string rejection');
             const childCtx = watchPromise(parentCtx, promise);
@@ -279,16 +265,15 @@ describe('Context', () => {
             // Wait for promise to reject
             await new Promise(resolve => setTimeout(resolve, 10));
             
-            expect(done).toBe(true);
-            expect(caughtError).toBeInstanceOf(Error);
+            assertEquals(done, true);
+            assert(caughtError instanceof Error);
             if (caughtError instanceof Error) {
-                expect(caughtError.message).toContain('string rejection');
+                assert(caughtError.message.includes('string rejection'));
             }
         });
     });
 
-    describe('Context interface', () => {
-        it('should provide done() promise that resolves when cancelled', async () => {
+        Deno.test('Context interface - should provide done() promise that resolves when cancelled', async () => {
             const [ctx, cancel] = withCancel(background());
             
             let resolved = false;
@@ -297,58 +282,52 @@ describe('Context', () => {
             ctx.done().then(() => {
                 resolved = true;
                 error = ctx.err() || null;
-            });
             
             cancel();
             
             // Wait a bit for async operations
             await new Promise(resolve => setTimeout(resolve, 10));
             
-            expect(resolved).toBe(true);
-            expect(error).toBeInstanceOf(Error);
+            assertEquals(resolved, true);
+            assert(error instanceof Error);
         });
 
-        it('should have signal property', () => {
+        Deno.test('should have signal property', () => {
             const ctx = background();
-            expect(ctx).toBeDefined();
+            assert(ctx !== undefined);
         });
 
-        it('should return error when cancelled', async () => {
+        Deno.test('should return error when cancelled', async () => {
             const [ctx, cancel] = withCancel(background());
             
-            expect(ctx.err()).toBeUndefined();
+            assertEquals(ctx.err(), undefined);
             
             cancel();
             
             // Wait a bit for async operations
             await new Promise(resolve => setTimeout(resolve, 10));
             
-            expect(ctx.err()).toBeInstanceOf(Error);
+            assert(ctx.err() instanceof Error);
         });
     });
 
-    describe('ContextCancelledError', () => {
-        it('should be an instance of Error', () => {
-            expect(ContextCancelledError).toBeInstanceOf(Error);
-        });
+        Deno.test('ContextCancelledError - should be an instance of Error', () => {
+            assert(ContextCancelledError instanceof Error);
 
-        it('should have the correct message', () => {
-            expect(ContextCancelledError.message).toBe('Context cancelled');
+        Deno.test('should have the correct message', () => {
+            assertEquals(ContextCancelledError.message, 'Context cancelled');
         });
     });
 
-    describe('ContextTimeoutError', () => {
-        it('should be an instance of Error', () => {
-            expect(ContextTimeoutError).toBeInstanceOf(Error);
-        });
+        Deno.test('ContextTimeoutError - should be an instance of Error', () => {
+            assert(ContextTimeoutError instanceof Error);
 
-        it('should have the correct message', () => {
-            expect(ContextTimeoutError.message).toBe('Context timeout');
+        Deno.test('should have the correct message', () => {
+            assertEquals(ContextTimeoutError.message, 'Context timeout');
         });
     });
 
-    describe('withAbort', () => {
-        it('aborting controller cancels context', async () => {
+        Deno.test('withAbort - aborting controller cancels context', async () => {
             const parent = background();
             const [ctx, ac] = withAbort(parent);
 
@@ -358,11 +337,10 @@ describe('Context', () => {
             ac.abort(new Error('abort reason'));
             await new Promise((r) => setTimeout(r, 10));
 
-            expect(done).toBe(true);
-            expect(ctx.err()).toBeInstanceOf(Error);
-        });
+            assertEquals(done, true);
+            assert(ctx.err() instanceof Error);
 
-        it('cancelling context aborts controller', async () => {
+        Deno.test('cancelling context aborts controller', async () => {
             const [parent, parentCancel] = withCancel(background());
             const [ctx, ac] = withAbort(parent);
 
@@ -373,27 +351,25 @@ describe('Context', () => {
 
             await new Promise((r) => setTimeout(r, 10));
 
-            expect(signalled).toBe(true);
+            assertEquals(signalled, true);
         });
     });
 
-    describe('afterFunc', () => {
-        it('should execute callback when context is cancelled', async () => {
+        Deno.test('afterFunc - should execute callback when context is cancelled', async () => {
             const [ctx, cancel] = withCancel(background());
             let called = false;
 
             const stop = afterFunc(ctx, () => {
                 called = true;
-            });
 
-            expect(called).toBe(false);
+            assertEquals(called, false);
             cancel();
 
             await new Promise((r) => setTimeout(r, 10));
-            expect(called).toBe(true);
+            assertEquals(called, true);
         });
 
-        it('should return true when stop is called before execution', async () => {
+        Deno.test('should return true when stop is called before execution', async () => {
             const [ctx, cancel] = withCancel(background());
             let called = false;
 
@@ -402,15 +378,15 @@ describe('Context', () => {
             });
 
             const stopped = stop();
-            expect(stopped).toBe(true);
-            expect(called).toBe(false);
+            assertEquals(stopped, true);
+            assertEquals(called, false);
 
             cancel();
             await new Promise((r) => setTimeout(r, 10));
-            expect(called).toBe(false);
+            assertEquals(called, false);
         });
 
-        it('should return false when stop is called after execution', async () => {
+        Deno.test('should return false when stop is called after execution', async () => {
             const [ctx, cancel] = withCancel(background());
             let called = false;
 
@@ -420,13 +396,13 @@ describe('Context', () => {
 
             cancel();
             await new Promise((r) => setTimeout(r, 10));
-            expect(called).toBe(true);
+            assertEquals(called, true);
 
             const stopped = stop();
-            expect(stopped).toBe(false);
+            assertEquals(stopped, false);
         });
 
-        it('should return false on second stop call', async () => {
+        Deno.test('should return false on second stop call', async () => {
             const [ctx, cancel] = withCancel(background());
             let called = false;
 
@@ -435,17 +411,17 @@ describe('Context', () => {
             });
 
             const stopped1 = stop();
-            expect(stopped1).toBe(true);
+            assertEquals(stopped1, true);
 
             const stopped2 = stop();
-            expect(stopped2).toBe(false);
+            assertEquals(stopped2, false);
 
             cancel();
             await new Promise((r) => setTimeout(r, 10));
-            expect(called).toBe(false);
+            assertEquals(called, false);
         });
 
-        it('should handle async callbacks', async () => {
+        Deno.test('should handle async callbacks', async () => {
             const [ctx, cancel] = withCancel(background());
             let called = false;
 
@@ -456,10 +432,10 @@ describe('Context', () => {
 
             cancel();
             await new Promise((r) => setTimeout(r, 20));
-            expect(called).toBe(true);
+            assertEquals(called, true);
         });
 
-        it('should propagate parent context cancellation', async () => {
+        Deno.test('should propagate parent context cancellation', async () => {
             const [parentCtx, parentCancel] = withCancel(background());
             const [childCtx, childCancel] = withCancel(parentCtx);
             let called = false;
@@ -471,11 +447,11 @@ describe('Context', () => {
             parentCancel();
             await new Promise((r) => setTimeout(r, 10));
 
-            expect(called).toBe(true);
-            expect(stop()).toBe(false);
+            assertEquals(called, true);
+            assertEquals(stop(), false);
         });
 
-        it('should handle errors in callback gracefully', async () => {
+        Deno.test('should handle errors in callback gracefully', async () => {
             const [ctx, cancel] = withCancel(background());
             let called = false;
 
@@ -486,11 +462,11 @@ describe('Context', () => {
 
             cancel();
             await new Promise((r) => setTimeout(r, 10));
-            expect(called).toBe(true);
+            assertEquals(called, true);
             // No error should be thrown
         });
 
-        it('should work with withTimeout context', async () => {
+        Deno.test('should work with withTimeout context', async () => {
             const ctx = withTimeout(background(), 20);
             let called = false;
 
@@ -499,10 +475,10 @@ describe('Context', () => {
             });
 
             await new Promise((r) => setTimeout(r, 40));
-            expect(called).toBe(true);
+            assertEquals(called, true);
         });
 
-        it('should work with watchPromise context', async () => {
+        Deno.test('should work with watchPromise context', async () => {
             let resolvePromise: () => void;
             const promise = new Promise<void>((resolve) => {
                 resolvePromise = resolve;
@@ -517,7 +493,7 @@ describe('Context', () => {
 
             resolvePromise!();
             await new Promise((r) => setTimeout(r, 10));
-            expect(called).toBe(true);
+            assertEquals(called, true);
         });
     });
 });

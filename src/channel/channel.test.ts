@@ -1,192 +1,174 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { Channel, select, receive, send, default_ } from './channel.js';
+import { assertEquals, assert, assertThrows } from './_test_util.ts';
+import { Channel, select, receive, send, default_ } from './channel.ts';
 
-describe('Channel', () => {
-  it('should throw error for negative capacity', () => {
-    expect(() => new Channel(-1)).toThrow('Channel: capacity must be non-negative');
-  });
+  Deno.test('Channel - should throw error for negative capacity', () => {
+    assertThrows(() => new Channel(-1), Error, 'Channel: capacity must be non-negative');
 
-  describe('Unbuffered Channel', () => {
     let ch: Channel<number>;
 
-    beforeEach(() => {
-      ch = new Channel<number>(0);
-    });
 
-    it('should initialize correctly', () => {
-      expect(ch.capacity).toBe(0);
-      expect(ch.length).toBe(0);
-      expect(ch.closed).toBe(false);
-    });
+    Deno.test('Unbuffered Channel - should initialize correctly', () => {
+      assertEquals(ch.capacity, 0);
+      assertEquals(ch.length, 0);
+      assertEquals(ch.closed, false);
 
-    it('should handle synchronous send/receive', async () => {
+    Deno.test('should handle synchronous send/receive', async () => {
       const promise = ch.receive();
       
       // Send should complete immediately since receiver is waiting
       await ch.send(42);
       
       const [value, ok] = await promise;
-      expect(ok).toBe(true);
-      expect(value).toBe(42);
+      assertEquals(ok, true);
+      assertEquals(value, 42);
     });
 
-    it('should handle asynchronous send/receive', async () => {
+    Deno.test('should handle asynchronous send/receive', async () => {
       const sendPromise = ch.send(100);
       
       // Let send operation start waiting
       await new Promise(resolve => setTimeout(resolve, 10));
       
       const [value, ok] = await ch.receive();
-      expect(ok).toBe(true);
-      expect(value).toBe(100);
+      assertEquals(ok, true);
+      assertEquals(value, 100);
       
       await sendPromise; // Should complete now
     });
 
-    it('should handle tryReceive on empty channel', () => {
+    Deno.test('should handle tryReceive on empty channel', () => {
       const [value, ok] = ch.tryReceive();
-      expect(ok).toBe(false);
-      expect(value).toBeUndefined();
+      assertEquals(ok, false);
+      assertEquals(value, undefined);
     });
 
-    it('should handle trySend with waiting receiver', async () => {
+    Deno.test('should handle trySend with waiting receiver', async () => {
       const promise = ch.receive();
       
-      expect(ch.trySend(123)).toBe(true);
+      assertEquals(ch.trySend(123), true);
       
       const [value, ok] = await promise;
-      expect(ok).toBe(true);
-      expect(value).toBe(123);
+      assertEquals(ok, true);
+      assertEquals(value, 123);
     });
 
-    it('should handle trySend without waiting receiver', () => {
-      expect(ch.trySend(456)).toBe(false);
+    Deno.test('should handle trySend without waiting receiver', () => {
+      assertEquals(ch.trySend(456), false);
     });
   });
 
-  describe('Buffered Channel', () => {
     let ch: Channel<string>;
 
-    beforeEach(() => {
-      ch = new Channel<string>(3);
-    });
 
-    it('should initialize correctly', () => {
-      expect(ch.capacity).toBe(3);
-      expect(ch.length).toBe(0);
-      expect(ch.closed).toBe(false);
-    });
+    Deno.test('Buffered Channel - should initialize correctly', () => {
+      assertEquals(ch.capacity, 3);
+      assertEquals(ch.length, 0);
+      assertEquals(ch.closed, false);
 
-    it('should handle buffered sends', async () => {
+    Deno.test('should handle buffered sends', async () => {
       await ch.send('a');
       await ch.send('b');
       await ch.send('c');
       
-      expect(ch.length).toBe(3);
+      assertEquals(ch.length, 3);
       
       // Fourth send should block
       const sendPromise = ch.send('d');
       
       await new Promise(resolve => setTimeout(resolve, 10));
-      expect(ch.length).toBe(3); // Still full
+      assertEquals(ch.length, 3); // Still full
       
       // Receive one to make space
       const [value, ok] = await ch.receive();
-      expect(ok).toBe(true);
-      expect(value).toBe('a');
-      expect(ch.length).toBe(3); // 'd' should have been added
+      assertEquals(ok, true);
+      assertEquals(value, 'a');
+      assertEquals(ch.length, 3); // 'd' should have been added
       
       await sendPromise; // Should complete
     });
 
-    it('should handle buffered receives', async () => {
+    Deno.test('should handle buffered receives', async () => {
       await ch.send('x');
       await ch.send('y');
       
       const [value1, ok1] = await ch.receive();
       const [value2, ok2] = await ch.receive();
       
-      expect(ok1).toBe(true);
-      expect(value1).toBe('x');
-      expect(ok2).toBe(true);
-      expect(value2).toBe('y');
-      expect(ch.length).toBe(0);
+      assertEquals(ok1, true);
+      assertEquals(value1, 'x');
+      assertEquals(ok2, true);
+      assertEquals(value2, 'y');
+      assertEquals(ch.length, 0);
     });
 
-    it('should handle tryReceive with buffered values', async () => {
+    Deno.test('should handle tryReceive with buffered values', async () => {
       await ch.send('test');
       
       const [value, ok] = ch.tryReceive();
-      expect(ok).toBe(true);
-      expect(value).toBe('test');
+      assertEquals(ok, true);
+      assertEquals(value, 'test');
       
       const [value2, ok2] = ch.tryReceive();
-      expect(ok2).toBe(false);
-      expect(value2).toBeUndefined();
+      assertEquals(ok2, false);
+      assertEquals(value2, undefined);
     });
 
-    it('should handle trySend with buffer space', () => {
-      expect(ch.trySend('1')).toBe(true);
-      expect(ch.trySend('2')).toBe(true);
-      expect(ch.trySend('3')).toBe(true);
-      expect(ch.trySend('4')).toBe(false); // Buffer full
+    Deno.test('should handle trySend with buffer space', () => {
+      assertEquals(ch.trySend('1'), true);
+      assertEquals(ch.trySend('2'), true);
+      assertEquals(ch.trySend('3'), true);
+      assertEquals(ch.trySend('4'), false); // Buffer full
       
-      expect(ch.length).toBe(3);
+      assertEquals(ch.length, 3);
     });
   });
 
-  describe('Channel Closing', () => {
     let ch: Channel<number>;
 
-    beforeEach(() => {
-      ch = new Channel<number>(1);
-    });
 
-    it('should close correctly', () => {
+    Deno.test('Channel Closing - should close correctly', () => {
       ch.close();
-      expect(ch.closed).toBe(true);
-    });
+      assertEquals(ch.closed, true);
 
-    it('should throw error on send to closed channel', () => {
+    Deno.test('should throw error on send to closed channel', () => {
       ch.close();
       expect(ch.send(1)).rejects.toThrow('Channel: send on closed channel');
     });
 
-    it('should return closed signal on receive from closed empty channel', async () => {
+    Deno.test('should return closed signal on receive from closed empty channel', async () => {
       ch.close();
       const [value, ok] = await ch.receive();
-      expect(ok).toBe(false);
-      expect(value).toBeUndefined();
+      assertEquals(ok, false);
+      assertEquals(value, undefined);
     });
 
-    it('should receive remaining buffered values after close', async () => {
+    Deno.test('should receive remaining buffered values after close', async () => {
       await ch.send(99);
       ch.close();
       
       const [value, ok] = await ch.receive();
-      expect(ok).toBe(true);
-      expect(value).toBe(99);
+      assertEquals(ok, true);
+      assertEquals(value, 99);
       
       // Now should return closed signal
       const [value2, ok2] = await ch.receive();
-      expect(ok2).toBe(false);
-      expect(value2).toBeUndefined();
+      assertEquals(ok2, false);
+      assertEquals(value2, undefined);
     });
 
-    it('should handle trySend on closed channel', () => {
+    Deno.test('should handle trySend on closed channel', () => {
       ch.close();
-      expect(ch.trySend(1)).toBe(false);
+      assertEquals(ch.trySend(1), false);
     });
 
-    it('should handle multiple closes', () => {
+    Deno.test('should handle multiple closes', () => {
       ch.close();
       ch.close(); // Should not throw
-      expect(ch.closed).toBe(true);
+      assertEquals(ch.closed, true);
     });
   });
 
-  describe('Channel Patterns', () => {
-    it('should handle fan-out pattern', async () => {
+    Deno.test('Channel Patterns - should handle fan-out pattern', async () => {
       const input = new Channel<number>(5); // Larger buffer to avoid blocking
       const output1 = new Channel<number>(5);
       const output2 = new Channel<number>(5);
@@ -224,11 +206,10 @@ describe('Channel', () => {
       const [r2_2, ok2_2] = await output2.receive();
       const results2 = ok2_1 && ok2_2 ? [r2_1, r2_2] : [];
       
-      expect(results1.sort()).toEqual([1, 3]);
-      expect(results2.sort()).toEqual([2, 4]);
-    });
+      assertEquals(results1.sort(), [1, 3]);
+      assertEquals(results2.sort(), [2, 4]);
 
-    it('should handle worker pool pattern', async () => {
+    Deno.test('should handle worker pool pattern', async () => {
       const jobs = new Channel<number>(5);
       const results = new Channel<number>(5);
       const numWorkers = 3;
@@ -267,12 +248,11 @@ describe('Channel', () => {
       jobs.close();
       
       collectedResults.sort((a, b) => a - b);
-      expect(collectedResults).toEqual([2, 4, 6, 8, 10]);
+      assertEquals(collectedResults, [2, 4, 6, 8, 10]);
     });
   });
 
-  describe('Channel used as semaphore (prefilled tokens)', () => {
-    it('limits concurrent workers to capacity', async () => {
+    Deno.test('Channel used as semaphore (prefilled tokens) - limits concurrent workers to capacity', async () => {
       const capacity = 4;
       const ch = new Channel<number>(capacity);
 
@@ -302,23 +282,22 @@ describe('Channel', () => {
 
       await Promise.all(tasks);
 
-      expect(maxConcurrent).toBeLessThanOrEqual(capacity);
-    });
+      assert(maxConcurrent <= capacity);
 
-    it('tryReceive behaves as tryAcquire', async () => {
+    Deno.test('tryReceive behaves as tryAcquire', async () => {
       const ch = new Channel<number>(1);
       await ch.send(1);
 
       const [got, ok] = ch.tryReceive();
-      expect(ok).toBe(true);
-      expect(got).toBe(1);
+      assertEquals(ok, true);
+      assertEquals(got, 1);
 
       const [got2, ok2] = ch.tryReceive();
-      expect(ok2).toBe(false);
-      expect(got2).toBeUndefined();
+      assertEquals(ok2, false);
+      assertEquals(got2, undefined);
     });
 
-    it('works with buffered channel as mutex (capacity=1)', async () => {
+    Deno.test('works with buffered channel as mutex (capacity=1)', async () => {
       const ch = new Channel<number>(1); // buffered mutex-like
 
       let inCs = 0;
@@ -340,13 +319,12 @@ describe('Channel', () => {
       const tasks = Array.from({ length: 10 }, () => worker());
       await Promise.all(tasks);
 
-      expect(maxInCs).toBeGreaterThan(0);
-      expect(maxInCs).toBeLessThanOrEqual(1); // buffered capacity=1 acts like mutex
+      assert(maxInCs > 0);
+      assert(maxInCs <= 1); // buffered capacity=1 acts like mutex
     });
   });
 
-  describe('select function', () => {
-    it('should select from multiple receive operations', async () => {
+    Deno.test('select function - should select from multiple receive operations', async () => {
       const ch1 = new Channel<number>();
       const ch2 = new Channel<number>();
 
@@ -361,11 +339,10 @@ describe('Channel', () => {
         { channel: ch2, action: (value, ok) => { receivedValue = value; receivedFrom = 'ch2'; } }
       ]);
 
-      expect(receivedFrom).toBe('ch1');
-      expect(receivedValue).toBe(42);
-    });
+      assertEquals(receivedFrom, 'ch1');
+      assertEquals(receivedValue, 42);
 
-    it('should select from multiple send operations', async () => {
+    Deno.test('should select from multiple send operations', async () => {
       const ch1 = new Channel<number>();
       const ch2 = new Channel<number>();
 
@@ -382,10 +359,10 @@ describe('Channel', () => {
         { channel: ch2, value: 200, action: () => { sentTo = 'ch2'; } }
       ]);
 
-      expect(sentTo).toBe('ch1');
+      assertEquals(sentTo, 'ch1');
     });
 
-    it('should execute default case when no operations are ready', async () => {
+    Deno.test('should execute default case when no operations are ready', async () => {
       const ch1 = new Channel<number>();
       const ch2 = new Channel<number>();
 
@@ -397,10 +374,10 @@ describe('Channel', () => {
         { default: () => { defaultExecuted = true; } }
       ]);
 
-      expect(defaultExecuted).toBe(true);
+      assertEquals(defaultExecuted, true);
     });
 
-    it('should not execute default when operations are ready', async () => {
+    Deno.test('should not execute default when operations are ready', async () => {
       const bufferedCh = new Channel<number>(1);
 
       // Pre-fill buffered channel
@@ -414,11 +391,11 @@ describe('Channel', () => {
         { default: () => { defaultExecuted = true; } }
       ]);
 
-      expect(defaultExecuted).toBe(false);
-      expect(receivedValue).toBe(42);
+      assertEquals(defaultExecuted, false);
+      assertEquals(receivedValue, 42);
     });
 
-    it('should handle mixed receive and send operations', async () => {
+    Deno.test('should handle mixed receive and send operations', async () => {
       const ch1 = new Channel<number>();
       const ch2 = new Channel<number>();
 
@@ -434,16 +411,15 @@ describe('Channel', () => {
         { channel: ch2, value: 300, action: () => { operation = 'send'; } }
       ]);
 
-      expect(operation).toBe('send');
+      assertEquals(operation, 'send');
     });
 
-    it('should throw error when no cases provided', async () => {
+    Deno.test('should throw error when no cases provided', async () => {
       await expect(select([])).rejects.toThrow('select: no cases provided');
     });
   });
 
-  describe('select helper functions', () => {
-    it('should work with receive helper', async () => {
+    Deno.test('select helper functions - should work with receive helper', async () => {
       const ch = new Channel<number>();
 
       let receivedValue: number | undefined;
@@ -453,10 +429,9 @@ describe('Channel', () => {
         receive(ch).then((value, ok) => { receivedValue = value; })
       ]);
 
-      expect(receivedValue).toBe(42);
-    });
+      assertEquals(receivedValue, 42);
 
-    it('should work with send helper', async () => {
+    Deno.test('should work with send helper', async () => {
       const ch = new Channel<number>();
 
       let sent = false;
@@ -468,10 +443,10 @@ describe('Channel', () => {
         send(ch, 100).then(() => { sent = true; })
       ]);
 
-      expect(sent).toBe(true);
+      assertEquals(sent, true);
     });
 
-    it('should work with default helper', async () => {
+    Deno.test('should work with default helper', async () => {
       const ch = new Channel<number>();
 
       let defaultExecuted = false;
@@ -481,10 +456,10 @@ describe('Channel', () => {
         default_(() => { defaultExecuted = true; })
       ]);
 
-      expect(defaultExecuted).toBe(true);
+      assertEquals(defaultExecuted, true);
     });
 
-    it('should work with mixed helpers', async () => {
+    Deno.test('should work with mixed helpers', async () => {
       const ch1 = new Channel<number>(1); // buffered channel
       const ch2 = new Channel<number>();
 
@@ -500,7 +475,7 @@ describe('Channel', () => {
         default_(() => { result = 'default'; })
       ]);
 
-      expect(result).toBe('received: 42');
+      assertEquals(result, 'received: 42');
     });
   });
 });
