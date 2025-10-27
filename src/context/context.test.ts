@@ -1,5 +1,5 @@
 import { assert, assertEquals, assertThrows } from './_test_util.ts';
-import type { Context } from './context';
+import type { Context } from './context.ts';
 import {
   afterFunc,
   background,
@@ -11,7 +11,7 @@ import {
   withCancel,
   withCancelCause,
   withTimeout,
-} from './context';
+} from './context.ts';
 
 Deno.test('background - should create a background context', () => {
   const ctx = background();
