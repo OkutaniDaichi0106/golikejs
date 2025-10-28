@@ -4,9 +4,12 @@ import { Writer } from "../io/writer.ts";
 
 export const MinRead = 512;
 
-export const ErrTooLarge = new Error("bytes buffer: too large");
-
-
+export class TooLargeError extends Error {
+	constructor(message = "bytes buffer: too large") {
+		super(message);
+		this.name = "TooLargeError";
+	}
+}
 
 export class Buffer implements Reader, Writer {
 	#buf: Uint8Array;
