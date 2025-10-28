@@ -1,14 +1,17 @@
+import { EOFError } from "../io/error.ts";
+import { Reader } from "../io/reader.ts";
+import { Writer } from "../io/writer.ts";
+
 export const MinRead = 512;
 
-export const ErrTooLarge = new Error("bytes buffer: too large");
-
-export function clone(src: Uint8Array): Uint8Array {
-	const dst = new Uint8Array(src.length);
-	dst.set(src);
-	return dst;
+export class TooLargeError extends Error {
+	constructor(message = "bytes buffer: too large") {
+		super(message);
+		this.name = "TooLargeError";
+	}
 }
 
-export class BytesBuffer {
+export class Buffer implements Reader, Writer {
 	#buf: Uint8Array;
 	#off: number; // read offset
 	#len: number; // write offset
@@ -19,9 +22,9 @@ export class BytesBuffer {
 		this.#len = 0; // Start with an empty buffer for writing
 	}
 
-	static make(capacity: number): BytesBuffer {
+	static make(capacity: number): Buffer {
 		const buf = new Uint8Array(capacity);
-		return new BytesBuffer(buf.buffer);
+		return new Buffer(buf.buffer);
 	}
 
 	bytes(): Uint8Array {
@@ -41,40 +44,40 @@ export class BytesBuffer {
 		this.#len = 0;
 	}
 
-	read(buf: Uint8Array): number {
+	async read(buf: Uint8Array): Promise<[number, Error | undefined]> {
 		const bytesAvailable = this.size;
 		const bytesToRead = Math.min(buf.length, bytesAvailable);
 		if (bytesToRead === 0) {
-			return 0;
+			return [0, new EOFError()];
 		}
 		buf.set(this.#buf.subarray(this.#off, this.#off + bytesToRead));
 		this.#off += bytesToRead;
 		if (this.#off === this.#len) {
 			this.reset();
 		}
-		return bytesToRead;
+		return [bytesToRead, undefined];
 	}
 
-	readUint8(): number {
+	readByte(): [number, Error | undefined] {
 		if (this.size < 1) {
-			throw new Error("Not enough data to read a byte");
+			return [0, new Error("Not enough data to read a byte")];
 		}
 		const value = this.#buf[this.#off]!;
 		this.#off += 1;
 		if (this.#off === this.#len) {
 			this.reset();
 		}
-		return value;
+		return [value, undefined];
 	}
 
-	write(data: Uint8Array): number {
+	async write(data: Uint8Array): Promise<[number, Error | undefined]> {
 		this.grow(data.length);
 		this.#buf.set(data, this.#len);
 		this.#len += data.length;
-		return data.length;
+		return [data.length, undefined];
 	}
 
-	writeUint8(value: number): void {
+	writeByte(value: number): void {
 		this.grow(1);
 		this.#buf[this.#len] = value;
 		this.#len += 1;
@@ -101,11 +104,11 @@ export class BytesBuffer {
 		this.#off = 0;
 	}
 
-	reserve(n: number): Uint8Array {
-		this.grow(n);
-		const start = this.#len;
-		const end = start + n;
-		this.#len = end;
-		return this.#buf.subarray(start, end);
-	}
+	// reserve(n: number): Uint8Array {
+	// 	this.grow(n);
+	// 	const start = this.#len;
+	// 	const end = start + n;
+	// 	this.#len = end;
+	// 	return this.#buf.subarray(start, end);
+	// }
 }
