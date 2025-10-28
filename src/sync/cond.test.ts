@@ -1,10 +1,10 @@
-import { Mutex } from './mutex.ts';
-import { Cond } from './cond.ts';
-import { assert, assertEquals } from '@std/assert';
+import { Mutex } from "./mutex.ts";
+import { Cond } from "./cond.ts";
+import { assert, assertEquals } from "@std/assert";
 
 // Tests for Cond (condition variable) behavior
 
-Deno.test('Cond - wait releases mutex and reacquires it after signal', async () => {
+Deno.test("Cond - wait releases mutex and reacquires it after signal", async () => {
 	const m = new Mutex();
 	const c = new Cond(m);
 
@@ -39,7 +39,7 @@ Deno.test('Cond - wait releases mutex and reacquires it after signal', async () 
 	assertEquals(waiterAcquired, true);
 });
 
-Deno.test('Cond - signal wakes only one waiter', async () => {
+Deno.test("Cond - signal wakes only one waiter", async () => {
 	const m = new Mutex();
 	const c = new Cond(m);
 
@@ -76,7 +76,7 @@ Deno.test('Cond - signal wakes only one waiter', async () => {
 	await Promise.all(waiters);
 });
 
-Deno.test('Cond - broadcast wakes all waiters', async () => {
+Deno.test("Cond - broadcast wakes all waiters", async () => {
 	const m = new Mutex();
 	const c = new Cond(m);
 
@@ -106,7 +106,7 @@ Deno.test('Cond - broadcast wakes all waiters', async () => {
 	await Promise.all(waiters);
 });
 
-Deno.test('Cond - signal/broadcast are no-ops when no waiters', () => {
+Deno.test("Cond - signal/broadcast are no-ops when no waiters", () => {
 	const m = new Mutex();
 	const c = new Cond(m);
 

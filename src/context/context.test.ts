@@ -1,4 +1,4 @@
-import { assert, assertEquals, assertThrows } from '@std/assert';
+import { assert, assertEquals, assertThrows } from "@std/assert";
 import {
 	afterFunc,
 	background,
@@ -10,28 +10,28 @@ import {
 	withCancel,
 	withCancelCause,
 	withTimeout,
-} from './context.ts';
+} from "./context.ts";
 
 // Background tests
-Deno.test('background - should create a background context', () => {
+Deno.test("background - should create a background context", () => {
 	const ctx = background();
 	assert(ctx !== undefined);
 	assertEquals(ctx.err(), undefined);
 });
 
-Deno.test('background - should return the same instance on multiple calls', () => {
+Deno.test("background - should return the same instance on multiple calls", () => {
 	const ctx1 = background();
 	const ctx2 = background();
 	assertEquals(ctx1, ctx2);
 });
 
-Deno.test('background - should not be aborted initially', () => {
+Deno.test("background - should not be aborted initially", () => {
 	const ctx = background();
 	assertEquals(ctx.err(), undefined);
 });
 
 // watchSignal tests
-Deno.test('watchSignal - should create a context with custom signal', () => {
+Deno.test("watchSignal - should create a context with custom signal", () => {
 	const parentCtx = background();
 	const controller = new AbortController();
 	const childCtx = watchSignal(parentCtx, controller.signal);
@@ -40,7 +40,7 @@ Deno.test('watchSignal - should create a context with custom signal', () => {
 	assertEquals(childCtx.err(), undefined);
 });
 
-Deno.test('watchSignal - should be cancelled when custom signal is aborted', async () => {
+Deno.test("watchSignal - should be cancelled when custom signal is aborted", async () => {
 	const parentCtx = background();
 	const controller = new AbortController();
 	const childCtx = watchSignal(parentCtx, controller.signal);
@@ -50,7 +50,7 @@ Deno.test('watchSignal - should be cancelled when custom signal is aborted', asy
 		done = true;
 	});
 
-	controller.abort(new Error('Custom abort'));
+	controller.abort(new Error("Custom abort"));
 
 	// Wait a bit for async operations
 	await new Promise((resolve) => setTimeout(resolve, 10));
@@ -59,17 +59,17 @@ Deno.test('watchSignal - should be cancelled when custom signal is aborted', asy
 	assert(childCtx.err() instanceof Error);
 });
 
-Deno.test('watchSignal - should handle already aborted signal', () => {
+Deno.test("watchSignal - should handle already aborted signal", () => {
 	const parentCtx = background();
 	const controller = new AbortController();
-	const testError = new Error('Already aborted');
+	const testError = new Error("Already aborted");
 	controller.abort(testError);
 
 	const childCtx = watchSignal(parentCtx, controller.signal);
 	assert(childCtx.err() instanceof Error);
 });
 
-Deno.test('watchSignal - should remove listener when context ends earlier', async () => {
+Deno.test("watchSignal - should remove listener when context ends earlier", async () => {
 	const parentCtx = background();
 	const controller = new AbortController();
 	const childCtx = watchSignal(parentCtx, controller.signal);
@@ -82,22 +82,22 @@ Deno.test('watchSignal - should remove listener when context ends earlier', asyn
 	cancel();
 
 	// No error should be thrown when aborting controller later
-	controller.abort(new Error('Should be ignored'));
+	controller.abort(new Error("Should be ignored"));
 	await new Promise((resolve) => setTimeout(resolve, 1));
 	assertEquals(true, true); // reach here without uncaught errors
 });
 
 // withCancel tests
-Deno.test('withCancel - should create a cancellable context', () => {
+Deno.test("withCancel - should create a cancellable context", () => {
 	const parentCtx = background();
 	const [childCtx, cancel] = withCancel(parentCtx);
 
 	assert(childCtx !== undefined);
 	assertEquals(childCtx.err(), undefined);
-	assertEquals(typeof cancel, 'function');
+	assertEquals(typeof cancel, "function");
 });
 
-Deno.test('withCancel - should cancel the context when cancel function is called', async () => {
+Deno.test("withCancel - should cancel the context when cancel function is called", async () => {
 	const parentCtx = background();
 	const [childCtx, cancel] = withCancel(parentCtx);
 
@@ -115,7 +115,7 @@ Deno.test('withCancel - should cancel the context when cancel function is called
 	assert(childCtx.err() instanceof Error);
 });
 
-Deno.test('withCancel - should be cancelled when parent is cancelled', async () => {
+Deno.test("withCancel - should be cancelled when parent is cancelled", async () => {
 	const [parentCtx, parentCancel] = withCancel(background());
 	const [childCtx, _childCancel] = withCancel(parentCtx);
 
@@ -133,20 +133,20 @@ Deno.test('withCancel - should be cancelled when parent is cancelled', async () 
 });
 
 // withCancelCause tests
-Deno.test('withCancelCause - should create a cancellable context with custom error', () => {
+Deno.test("withCancelCause - should create a cancellable context with custom error", () => {
 	const parentCtx = background();
 	const [childCtx, cancel] = withCancelCause(parentCtx);
 
 	assert(childCtx !== undefined);
 	assertEquals(childCtx.err(), undefined);
-	assertEquals(typeof cancel, 'function');
+	assertEquals(typeof cancel, "function");
 });
 
-Deno.test('withCancelCause - should cancel with custom error', async () => {
+Deno.test("withCancelCause - should cancel with custom error", async () => {
 	const parentCtx = background();
 	const [childCtx, cancel] = withCancelCause(parentCtx);
 
-	const customError = new Error('Custom cancellation reason');
+	const customError = new Error("Custom cancellation reason");
 	cancel(customError);
 
 	await new Promise((resolve) => setTimeout(resolve, 10));
@@ -154,7 +154,7 @@ Deno.test('withCancelCause - should cancel with custom error', async () => {
 	assertEquals(childCtx.err(), customError);
 });
 
-Deno.test('withCancelCause - should handle undefined error', async () => {
+Deno.test("withCancelCause - should handle undefined error", async () => {
 	const parentCtx = background();
 	const [childCtx, cancel] = withCancelCause(parentCtx);
 
@@ -171,7 +171,7 @@ Deno.test('withCancelCause - should handle undefined error', async () => {
 });
 
 // withTimeout tests
-Deno.test('withTimeout - should create a context with timeout', async () => {
+Deno.test("withTimeout - should create a context with timeout", async () => {
 	const parentCtx = background();
 	const childCtx = withTimeout(parentCtx, 100);
 
@@ -182,7 +182,7 @@ Deno.test('withTimeout - should create a context with timeout', async () => {
 	await childCtx.done();
 });
 
-Deno.test('withTimeout - should cancel after timeout', async () => {
+Deno.test("withTimeout - should cancel after timeout", async () => {
 	const parentCtx = background();
 	const childCtx = withTimeout(parentCtx, 50);
 
@@ -198,7 +198,7 @@ Deno.test('withTimeout - should cancel after timeout', async () => {
 	assert(childCtx.err() instanceof Error);
 });
 
-Deno.test('withTimeout - should not timeout if parent is cancelled first', async () => {
+Deno.test("withTimeout - should not timeout if parent is cancelled first", async () => {
 	const [parentCtx, parentCancel] = withCancel(background());
 	const childCtx = withTimeout(parentCtx, 100);
 
@@ -210,7 +210,7 @@ Deno.test('withTimeout - should not timeout if parent is cancelled first', async
 });
 
 // watchPromise tests
-Deno.test('watchPromise - should create a context that cancels when promise resolves', async () => {
+Deno.test("watchPromise - should create a context that cancels when promise resolves", async () => {
 	const parentCtx = background();
 	const promise = new Promise<void>((resolve) => setTimeout(() => resolve(), 50));
 	const childCtx = watchPromise(parentCtx, promise);
@@ -225,10 +225,10 @@ Deno.test('watchPromise - should create a context that cancels when promise reso
 	assertEquals(done, true);
 });
 
-Deno.test('watchPromise - should create a context that cancels when promise rejects', async () => {
+Deno.test("watchPromise - should create a context that cancels when promise rejects", async () => {
 	const parentCtx = background();
 	const promise = new Promise<void>((_, reject) =>
-		setTimeout(() => reject(new Error('Promise rejected')), 50)
+		setTimeout(() => reject(new Error("Promise rejected")), 50)
 	);
 	const childCtx = watchPromise(parentCtx, promise);
 
@@ -245,14 +245,14 @@ Deno.test('watchPromise - should create a context that cancels when promise reje
 	assertEquals(done, true);
 	assert(caughtError instanceof Error);
 	if (caughtError instanceof Error) {
-		assert(caughtError.message.includes('Promise rejected'));
+		assert(caughtError.message.includes("Promise rejected"));
 	}
 });
 
-Deno.test('watchPromise - should handle non-Error rejection reasons', async () => {
+Deno.test("watchPromise - should handle non-Error rejection reasons", async () => {
 	const parentCtx = background();
 	const promise = new Promise<void>((_, reject) =>
-		setTimeout(() => reject('string rejection'), 50)
+		setTimeout(() => reject("string rejection"), 50)
 	);
 	const childCtx = watchPromise(parentCtx, promise);
 
@@ -269,12 +269,12 @@ Deno.test('watchPromise - should handle non-Error rejection reasons', async () =
 	assertEquals(done, true);
 	assert(caughtError instanceof Error);
 	if (caughtError instanceof Error) {
-		assert(caughtError.message.includes('string rejection'));
+		assert(caughtError.message.includes("string rejection"));
 	}
 });
 
 // Context interface tests
-Deno.test('Context interface - should provide done() promise that resolves when cancelled', async () => {
+Deno.test("Context interface - should provide done() promise that resolves when cancelled", async () => {
 	const [ctx, cancel] = withCancel(background());
 
 	let resolved = false;
@@ -294,12 +294,12 @@ Deno.test('Context interface - should provide done() promise that resolves when 
 	});
 });
 
-Deno.test('Context interface - should have signal property', () => {
+Deno.test("Context interface - should have signal property", () => {
 	const ctx = background();
 	assert(ctx !== undefined);
 });
 
-Deno.test('Context interface - should return error when cancelled', async () => {
+Deno.test("Context interface - should return error when cancelled", async () => {
 	const [ctx, cancel] = withCancel(background());
 
 	assertEquals(ctx.err(), undefined);
@@ -312,28 +312,28 @@ Deno.test('Context interface - should return error when cancelled', async () => 
 });
 
 // Error constants tests
-Deno.test('ContextCancelledError - should be an instance of Error', () => {
+Deno.test("ContextCancelledError - should be an instance of Error", () => {
 	const err = new ContextCancelledError();
 	assert(err instanceof Error);
 });
 
-Deno.test('ContextCancelledError - should have the correct message', () => {
+Deno.test("ContextCancelledError - should have the correct message", () => {
 	const err = new ContextCancelledError();
-	assertEquals(err.message, 'Context cancelled');
+	assertEquals(err.message, "Context cancelled");
 });
 
-Deno.test('ContextTimeoutError - should be an instance of Error', () => {
+Deno.test("ContextTimeoutError - should be an instance of Error", () => {
 	const err = new ContextTimeoutError();
 	assert(err instanceof Error);
 });
 
-Deno.test('ContextTimeoutError - should have the correct message', () => {
-	const err = new ContextTimeoutError('Context timeout');
-	assertEquals(err.message, 'Context timeout');
+Deno.test("ContextTimeoutError - should have the correct message", () => {
+	const err = new ContextTimeoutError("Context timeout");
+	assertEquals(err.message, "Context timeout");
 });
 
 // withAbort tests
-Deno.test('withAbort - aborting controller cancels context', async () => {
+Deno.test("withAbort - aborting controller cancels context", async () => {
 	const parentCtx = background();
 	const [ctx, controller] = withAbort(parentCtx);
 
@@ -342,7 +342,7 @@ Deno.test('withAbort - aborting controller cancels context', async () => {
 		done = true;
 	});
 
-	controller.abort(new Error('Aborted'));
+	controller.abort(new Error("Aborted"));
 
 	await new Promise((resolve) => setTimeout(resolve, 10));
 
@@ -350,7 +350,7 @@ Deno.test('withAbort - aborting controller cancels context', async () => {
 	assert(ctx.err() instanceof Error);
 });
 
-Deno.test('withAbort - cancelling context aborts controller', async () => {
+Deno.test("withAbort - cancelling context aborts controller", async () => {
 	const [parentCtx, cancelParent] = withCancel(background());
 	const [ctx, controller] = withAbort(parentCtx);
 
@@ -364,7 +364,7 @@ Deno.test('withAbort - cancelling context aborts controller', async () => {
 });
 
 // afterFunc tests
-Deno.test('afterFunc - should execute callback when context is cancelled', async () => {
+Deno.test("afterFunc - should execute callback when context is cancelled", async () => {
 	const [ctx, cancel] = withCancel(background());
 
 	let callbackExecuted = false;
@@ -379,7 +379,7 @@ Deno.test('afterFunc - should execute callback when context is cancelled', async
 	assertEquals(callbackExecuted, true);
 });
 
-Deno.test('afterFunc - should return true when stop is called before execution', async () => {
+Deno.test("afterFunc - should return true when stop is called before execution", async () => {
 	const [ctx, cancel] = withCancel(background());
 
 	let callbackExecuted = false;
@@ -399,7 +399,7 @@ Deno.test('afterFunc - should return true when stop is called before execution',
 	assertEquals(callbackExecuted, false);
 });
 
-Deno.test('afterFunc - should return false when stop is called after execution', async () => {
+Deno.test("afterFunc - should return false when stop is called after execution", async () => {
 	const [ctx, cancel] = withCancel(background());
 
 	let callbackExecuted = false;

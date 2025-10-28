@@ -24,7 +24,7 @@
     "lineWidth": 100,
     "indentWidth": 4,
     "semiColons": true,
-    "singleQuote": true,
+    "singleQuote": false,
     "proseWrap": "preserve",
     "include": ["src/"]
   },

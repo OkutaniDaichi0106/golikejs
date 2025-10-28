@@ -1,17 +1,17 @@
-import { Semaphore } from './semaphore.ts';
-import { assert, assertEquals, assertThrows } from '@std/assert';
+import { Semaphore } from "./semaphore.ts";
+import { assert, assertEquals, assertThrows } from "@std/assert";
 
-Deno.test('Semaphore - should throw error for negative permits', () => {
-	assertThrows(() => new Semaphore(-1), Error, 'Semaphore: permits must be non-negative');
+Deno.test("Semaphore - should throw error for negative permits", () => {
+	assertThrows(() => new Semaphore(-1), Error, "Semaphore: permits must be non-negative");
 });
 
-Deno.test('Semaphore - should initialize with correct permits', () => {
+Deno.test("Semaphore - should initialize with correct permits", () => {
 	const sem = new Semaphore(3);
 	assertEquals(sem.availablePermits, 3);
 	assertEquals(sem.queueLength, 0);
 });
 
-Deno.test('Semaphore - should handle acquire and release correctly', async () => {
+Deno.test("Semaphore - should handle acquire and release correctly", async () => {
 	const sem = new Semaphore(2);
 
 	await sem.acquire();
@@ -27,7 +27,7 @@ Deno.test('Semaphore - should handle acquire and release correctly', async () =>
 	assertEquals(sem.availablePermits, 2);
 });
 
-Deno.test('Semaphore - should handle tryAcquire correctly', () => {
+Deno.test("Semaphore - should handle tryAcquire correctly", () => {
 	const sem = new Semaphore(1);
 
 	assertEquals(sem.tryAcquire(), true);
@@ -38,7 +38,7 @@ Deno.test('Semaphore - should handle tryAcquire correctly', () => {
 	assertEquals(sem.tryAcquire(), true);
 });
 
-Deno.test('Semaphore - should handle blocking when no permits available', async () => {
+Deno.test("Semaphore - should handle blocking when no permits available", async () => {
 	const sem = new Semaphore(1);
 	const results: number[] = [];
 
@@ -66,7 +66,7 @@ Deno.test('Semaphore - should handle blocking when no permits available', async 
 	assertEquals(results, [1]);
 });
 
-Deno.test('Semaphore - should handle multiple concurrent acquisitions', async () => {
+Deno.test("Semaphore - should handle multiple concurrent acquisitions", async () => {
 	const sem = new Semaphore(2);
 	const results: number[] = [];
 	const startTime = Date.now();
@@ -95,7 +95,7 @@ Deno.test('Semaphore - should handle multiple concurrent acquisitions', async ()
 	assertEquals(new Set(results), new Set([0, 1, 2, 3]));
 });
 
-Deno.test('Semaphore - should maintain FIFO order for waiters', async () => {
+Deno.test("Semaphore - should maintain FIFO order for waiters", async () => {
 	const sem = new Semaphore(1);
 	const results: number[] = [];
 
@@ -128,7 +128,7 @@ Deno.test('Semaphore - should maintain FIFO order for waiters', async () => {
 	assertEquals(results, [0, 1, 2]);
 });
 
-Deno.test('Semaphore - should handle zero permits (binary semaphore)', async () => {
+Deno.test("Semaphore - should handle zero permits (binary semaphore)", async () => {
 	const sem = new Semaphore(0);
 	assertEquals(sem.availablePermits, 0);
 
@@ -153,7 +153,7 @@ Deno.test('Semaphore - should handle zero permits (binary semaphore)', async () 
 	assertEquals(results, [1]);
 });
 
-Deno.test('Semaphore - should handle resource pool scenario', async () => {
+Deno.test("Semaphore - should handle resource pool scenario", async () => {
 	const poolSize = 3;
 	const sem = new Semaphore(poolSize);
 	const activeConnections = new Set<number>();

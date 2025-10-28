@@ -14,17 +14,17 @@ export type CancelFunc = () => void;
 export type CancelCauseFunc = (err: Error | undefined) => void;
 
 export class ContextCancelledError extends Error {
-	constructor(message = 'Context cancelled') {
+	constructor(message = "Context cancelled") {
 		super(message);
-		this.name = 'ContextCancelledError';
+		this.name = "ContextCancelledError";
 		Object.setPrototypeOf(this, ContextCancelledError.prototype);
 	}
 }
 
 export class ContextTimeoutError extends Error {
-	constructor(message = 'context deadline exceeded') {
+	constructor(message = "context deadline exceeded") {
 		super(message);
-		this.name = 'ContextTimeoutError';
+		this.name = "ContextTimeoutError";
 		Object.setPrototypeOf(this, ContextTimeoutError.prototype);
 	}
 }
@@ -95,14 +95,14 @@ class DefaultContext implements Context {
 const backgroundContext: Context = (() => {
 	const context = new DefaultContext();
 	// Guard for SSR / non-browser environments
-	if (typeof window !== 'undefined' && typeof globalThis.addEventListener === 'function') {
+	if (typeof window !== "undefined" && typeof globalThis.addEventListener === "function") {
 		const handlePageTermination = (eventType: string) => {
 			context.cancel(new Error(`Page ${eventType}`));
 		};
 		const once = { once: true } as const;
-		globalThis.addEventListener('beforeunload', () => handlePageTermination('unloading'), once);
-		globalThis.addEventListener('unload', () => handlePageTermination('unloaded'), once);
-		globalThis.addEventListener('pagehide', () => handlePageTermination('hidden'), once);
+		globalThis.addEventListener("beforeunload", () => handlePageTermination("unloading"), once);
+		globalThis.addEventListener("unload", () => handlePageTermination("unloaded"), once);
+		globalThis.addEventListener("pagehide", () => handlePageTermination("hidden"), once);
 	}
 	return context;
 })();
@@ -132,9 +132,9 @@ export function watchSignal(parent: Context, signal: AbortSignal): Context {
 	if (signal.aborted) {
 		onAbort();
 	} else {
-		signal.addEventListener('abort', onAbort, { once: true });
+		signal.addEventListener("abort", onAbort, { once: true });
 		// Ensure listener removal when context ends earlier
-		context.done().finally(() => signal.removeEventListener('abort', onAbort));
+		context.done().finally(() => signal.removeEventListener("abort", onAbort));
 	}
 	return context;
 }
@@ -163,8 +163,8 @@ export function withAbort(parent: Context): [Context, AbortController] {
 	if (ac.signal.aborted) {
 		onAbort();
 	} else {
-		ac.signal.addEventListener('abort', onAbort, { once: true });
-		context.done().finally(() => ac.signal.removeEventListener('abort', onAbort));
+		ac.signal.addEventListener("abort", onAbort, { once: true });
+		context.done().finally(() => ac.signal.removeEventListener("abort", onAbort));
 	}
 
 	// Ensure context cancellation aborts the controller (two-way sync)

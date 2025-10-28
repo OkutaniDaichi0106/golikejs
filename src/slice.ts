@@ -19,7 +19,13 @@ export class Slice<T> implements Iterable<T> {
 	public len: number;
 	public cap: number;
 
-	constructor(backing: any, start: number, len: number, cap: number, ctor?: TypedArrayConstructor) {
+	constructor(
+		backing: any,
+		start: number,
+		len: number,
+		cap: number,
+		ctor?: TypedArrayConstructor,
+	) {
 		this.#backing = backing;
 		this.#start = start;
 		this.len = len;
@@ -143,28 +149,28 @@ export function make<T>(ctor: any, length: number, capacity?: number): Slice<T> 
 	return new Slice<T>(backing, 0, length, cap);
 }
 
-	// Convenience types and helpers for byte slices (Go's []byte)
-	export type Byte = number;
+// Convenience types and helpers for byte slices (Go's []byte)
+export type Byte = number;
 
-	/**
-	 * Uint8Slice is a convenience subclass of Slice<number> backed by a Uint8Array.
-	 * Use `makeUint8(len, cap?)` to construct one.
-	 */
-	export class Uint8Slice extends Slice<number> {
-		constructor(length: number, capacity?: number) {
-			const cap = capacity === undefined ? length : capacity;
-			const backing = new Uint8Array(cap);
-			super(backing, 0, length, cap, Uint8Array);
-		}
-
-		// Narrow the return type to Uint8Array for convenience.
-			override toArray(): Uint8Array {
-				return super.toArray() as Uint8Array;
-			}
+/**
+ * Uint8Slice is a convenience subclass of Slice<number> backed by a Uint8Array.
+ * Use `makeUint8(len, cap?)` to construct one.
+ */
+export class Uint8Slice extends Slice<number> {
+	constructor(length: number, capacity?: number) {
+		const cap = capacity === undefined ? length : capacity;
+		const backing = new Uint8Array(cap);
+		super(backing, 0, length, cap, Uint8Array);
 	}
 
-	export type ByteSlice = Uint8Slice;
-
-	export function makeUint8(length: number, capacity?: number): Uint8Slice {
-		return new Uint8Slice(length, capacity);
+	// Narrow the return type to Uint8Array for convenience.
+	override toArray(): Uint8Array {
+		return super.toArray() as Uint8Array;
 	}
+}
+
+export type ByteSlice = Uint8Slice;
+
+export function makeUint8(length: number, capacity?: number): Uint8Slice {
+	return new Uint8Slice(length, capacity);
+}

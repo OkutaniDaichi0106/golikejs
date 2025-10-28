@@ -1,19 +1,19 @@
-import { assert, assertEquals, assertRejects, assertThrows } from '@std/assert';
-import { Channel, default_, receive, select, send } from './channel.ts';
+import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
+import { Channel, default_, receive, select, send } from "./channel.ts";
 
-Deno.test('Channel - should throw error for negative capacity', () => {
-	assertThrows(() => new Channel(-1), Error, 'Channel: capacity must be non-negative');
+Deno.test("Channel - should throw error for negative capacity", () => {
+	assertThrows(() => new Channel(-1), Error, "Channel: capacity must be non-negative");
 });
 
 // Unbuffered Channel Tests
-Deno.test('Channel - Unbuffered: should initialize correctly', () => {
+Deno.test("Channel - Unbuffered: should initialize correctly", () => {
 	const ch = new Channel<number>(0);
 	assertEquals(ch.capacity, 0);
 	assertEquals(ch.length, 0);
 	assertEquals(ch.closed, false);
 });
 
-Deno.test('Channel - Unbuffered: should handle synchronous send/receive', async () => {
+Deno.test("Channel - Unbuffered: should handle synchronous send/receive", async () => {
 	const ch = new Channel<number>(0);
 	const promise = ch.receive();
 
@@ -25,7 +25,7 @@ Deno.test('Channel - Unbuffered: should handle synchronous send/receive', async 
 	assertEquals(value, 42);
 });
 
-Deno.test('Channel - Unbuffered: should handle asynchronous send/receive', async () => {
+Deno.test("Channel - Unbuffered: should handle asynchronous send/receive", async () => {
 	const ch = new Channel<number>(0);
 	const sendPromise = ch.send(100);
 
@@ -39,14 +39,14 @@ Deno.test('Channel - Unbuffered: should handle asynchronous send/receive', async
 	await sendPromise; // Should complete now
 });
 
-Deno.test('Channel - Unbuffered: should handle tryReceive on empty channel', () => {
+Deno.test("Channel - Unbuffered: should handle tryReceive on empty channel", () => {
 	const ch = new Channel<number>(0);
 	const [value, ok] = ch.tryReceive();
 	assertEquals(ok, false);
 	assertEquals(value, undefined);
 });
 
-Deno.test('Channel - Unbuffered: should handle trySend with waiting receiver', async () => {
+Deno.test("Channel - Unbuffered: should handle trySend with waiting receiver", async () => {
 	const ch = new Channel<number>(0);
 	const promise = ch.receive();
 
@@ -57,20 +57,20 @@ Deno.test('Channel - Unbuffered: should handle trySend with waiting receiver', a
 	assertEquals(value, 123);
 });
 
-Deno.test('Channel - Unbuffered: should handle trySend without waiting receiver', () => {
+Deno.test("Channel - Unbuffered: should handle trySend without waiting receiver", () => {
 	const ch = new Channel<number>(0);
 	assertEquals(ch.trySend(456), false);
 });
 
 // Buffered Channel Tests
-Deno.test('Channel - Buffered: should initialize correctly', () => {
+Deno.test("Channel - Buffered: should initialize correctly", () => {
 	const ch = new Channel<number>(3);
 	assertEquals(ch.capacity, 3);
 	assertEquals(ch.length, 0);
 	assertEquals(ch.closed, false);
 });
 
-Deno.test('Channel - Buffered: should handle buffered sends', async () => {
+Deno.test("Channel - Buffered: should handle buffered sends", async () => {
 	const ch = new Channel<number>(3);
 	await ch.send(1);
 	await ch.send(2);
@@ -93,7 +93,7 @@ Deno.test('Channel - Buffered: should handle buffered sends', async () => {
 	await sendPromise; // Should complete
 });
 
-Deno.test('Channel - Buffered: should handle buffered receives', async () => {
+Deno.test("Channel - Buffered: should handle buffered receives", async () => {
 	const ch = new Channel<number>(3);
 	await ch.send(10);
 	await ch.send(20);
@@ -108,7 +108,7 @@ Deno.test('Channel - Buffered: should handle buffered receives', async () => {
 	assertEquals(ch.length, 0);
 });
 
-Deno.test('Channel - Buffered: should handle tryReceive with buffered data', () => {
+Deno.test("Channel - Buffered: should handle tryReceive with buffered data", () => {
 	const ch = new Channel<number>(3);
 	ch.trySend(100);
 	ch.trySend(200);
@@ -122,7 +122,7 @@ Deno.test('Channel - Buffered: should handle tryReceive with buffered data', () 
 	assertEquals(value2, 200);
 });
 
-Deno.test('Channel - Buffered: should handle trySend with space available', () => {
+Deno.test("Channel - Buffered: should handle trySend with space available", () => {
 	const ch = new Channel<number>(3);
 	assertEquals(ch.trySend(1), true);
 	assertEquals(ch.trySend(2), true);
@@ -130,7 +130,7 @@ Deno.test('Channel - Buffered: should handle trySend with space available', () =
 	assertEquals(ch.length, 3);
 });
 
-Deno.test('Channel - Buffered: should handle trySend when full', () => {
+Deno.test("Channel - Buffered: should handle trySend when full", () => {
 	const ch = new Channel<number>(2);
 	assertEquals(ch.trySend(1), true);
 	assertEquals(ch.trySend(2), true);
@@ -138,13 +138,13 @@ Deno.test('Channel - Buffered: should handle trySend when full', () => {
 });
 
 // Close Tests
-Deno.test('Channel - Close: should close channel', () => {
+Deno.test("Channel - Close: should close channel", () => {
 	const ch = new Channel<number>(1);
 	ch.close();
 	assertEquals(ch.closed, true);
 });
 
-Deno.test('Channel - Close: should throw error when sending on closed channel', async () => {
+Deno.test("Channel - Close: should throw error when sending on closed channel", async () => {
 	const ch = new Channel<number>(1);
 	ch.close();
 
@@ -153,11 +153,11 @@ Deno.test('Channel - Close: should throw error when sending on closed channel', 
 			await ch.send(1);
 		},
 		Error,
-		'Channel: send on closed channel',
+		"Channel: send on closed channel",
 	);
 });
 
-Deno.test('Channel - Close: should return false from receive on closed empty channel', async () => {
+Deno.test("Channel - Close: should return false from receive on closed empty channel", async () => {
 	const ch = new Channel<number>(0);
 	ch.close();
 
@@ -166,7 +166,7 @@ Deno.test('Channel - Close: should return false from receive on closed empty cha
 	assertEquals(value, undefined);
 });
 
-Deno.test('Channel - Close: should drain buffered values before closing', async () => {
+Deno.test("Channel - Close: should drain buffered values before closing", async () => {
 	const ch = new Channel<number>(3);
 	await ch.send(1);
 	await ch.send(2);
@@ -185,7 +185,7 @@ Deno.test('Channel - Close: should drain buffered values before closing', async 
 	assertEquals(value3, undefined);
 });
 
-Deno.test('Channel - Close: should handle multiple close calls idempotently', () => {
+Deno.test("Channel - Close: should handle multiple close calls idempotently", () => {
 	const ch = new Channel<number>(1);
 	ch.close();
 	ch.close();
@@ -193,17 +193,17 @@ Deno.test('Channel - Close: should handle multiple close calls idempotently', ()
 });
 
 // Select Tests
-Deno.test('Channel - Select: should throw error when no cases provided', async () => {
+Deno.test("Channel - Select: should throw error when no cases provided", async () => {
 	await assertRejects(
 		async () => {
 			await select([]);
 		},
 		Error,
-		'select: no cases provided',
+		"select: no cases provided",
 	);
 });
 
-Deno.test('Channel - Select: should handle single receive case', async () => {
+Deno.test("Channel - Select: should handle single receive case", async () => {
 	const ch = new Channel<number>(1);
 	await ch.send(42);
 
@@ -217,7 +217,7 @@ Deno.test('Channel - Select: should handle single receive case', async () => {
 	assertEquals(result, 42);
 });
 
-Deno.test('Channel - Select: should handle single send case', async () => {
+Deno.test("Channel - Select: should handle single send case", async () => {
 	const ch = new Channel<number>(1);
 
 	let sent = false;
@@ -233,7 +233,7 @@ Deno.test('Channel - Select: should handle single send case', async () => {
 	assertEquals(ok, true);
 });
 
-Deno.test('Channel - Select: should handle default case when no channel ready', async () => {
+Deno.test("Channel - Select: should handle default case when no channel ready", async () => {
 	const ch = new Channel<number>(0);
 
 	let defaultExecuted = false;
@@ -249,7 +249,7 @@ Deno.test('Channel - Select: should handle default case when no channel ready', 
 	assertEquals(defaultExecuted, true);
 });
 
-Deno.test('Channel - Select: should handle multiple channels', async () => {
+Deno.test("Channel - Select: should handle multiple channels", async () => {
 	const ch1 = new Channel<number>(1);
 	const ch2 = new Channel<number>(1);
 
@@ -268,24 +268,24 @@ Deno.test('Channel - Select: should handle multiple channels', async () => {
 	assertEquals(result, 100);
 });
 
-Deno.test('Channel - Select: should handle send and receive cases', async () => {
+Deno.test("Channel - Select: should handle send and receive cases", async () => {
 	const ch1 = new Channel<number>(1);
 	const ch2 = new Channel<number>(1);
 
-	let action = '';
+	let action = "";
 	await select([
 		send(ch1, 10).then(() => {
-			action = 'sent to ch1';
+			action = "sent to ch1";
 		}),
 		receive(ch2).then(() => {
-			action = 'received from ch2';
+			action = "received from ch2";
 		}),
 	]);
 
-	assert(action === 'sent to ch1' || action === 'received from ch2');
+	assert(action === "sent to ch1" || action === "received from ch2");
 });
 
-Deno.test('Channel - Select: should work with closed channels', async () => {
+Deno.test("Channel - Select: should work with closed channels", async () => {
 	const ch = new Channel<number>(0);
 	ch.close();
 
@@ -300,7 +300,7 @@ Deno.test('Channel - Select: should work with closed channels', async () => {
 });
 
 // Integration Tests
-Deno.test('Channel - Integration: should handle producer-consumer pattern', async () => {
+Deno.test("Channel - Integration: should handle producer-consumer pattern", async () => {
 	const ch = new Channel<number>(3);
 	const results: number[] = [];
 
@@ -326,7 +326,7 @@ Deno.test('Channel - Integration: should handle producer-consumer pattern', asyn
 	assertEquals(results, [1, 2, 3, 4, 5]);
 });
 
-Deno.test('Channel - Integration: should handle multiple concurrent senders', async () => {
+Deno.test("Channel - Integration: should handle multiple concurrent senders", async () => {
 	const ch = new Channel<number>(5);
 	const results: number[] = [];
 
@@ -356,7 +356,7 @@ Deno.test('Channel - Integration: should handle multiple concurrent senders', as
 	assert(results.includes(4));
 });
 
-Deno.test('Channel - Integration: should handle select with timeout pattern', async () => {
+Deno.test("Channel - Integration: should handle select with timeout pattern", async () => {
 	const ch = new Channel<number>(0);
 	const timeoutCh = new Channel<number>(0);
 

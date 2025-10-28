@@ -19,7 +19,7 @@ export class Channel<T> {
 	 */
 	constructor(capacity = 0) {
 		if (capacity < 0) {
-			throw new Error('Channel: capacity must be non-negative');
+			throw new Error("Channel: capacity must be non-negative");
 		}
 		this.#capacity = capacity;
 		if (capacity > 0) this.#buffer = new Array<T | undefined>(capacity);
@@ -31,7 +31,7 @@ export class Channel<T> {
 	 */
 	async send(value: T): Promise<void> {
 		if (this.#closed) {
-			throw new Error('Channel: send on closed channel');
+			throw new Error("Channel: send on closed channel");
 		}
 
 		// If there's a waiting receiver, send directly
@@ -287,7 +287,7 @@ export type SelectCase<T = any> = ReceiveCase<T> | SendCase<T> | DefaultCase;
  */
 export async function select<T = any>(cases: SelectCase<T>[]): Promise<void> {
 	if (cases.length === 0) {
-		throw new Error('select: no cases provided');
+		throw new Error("select: no cases provided");
 	}
 
 	// Separate cases by type in a single pass - optimized for performance
@@ -297,10 +297,10 @@ export async function select<T = any>(cases: SelectCase<T>[]): Promise<void> {
 
 	// Single pass classification with validation
 	for (const case_ of cases) {
-		if ('default' in case_) {
-			if (defaultCase) throw new Error('select: multiple default cases not allowed');
+		if ("default" in case_) {
+			if (defaultCase) throw new Error("select: multiple default cases not allowed");
 			defaultCase = case_;
-		} else if ('value' in case_) {
+		} else if ("value" in case_) {
 			sendCases.push(case_ as SendCase<T>);
 		} else {
 			receiveCases.push(case_ as ReceiveCase<T>);
@@ -319,14 +319,14 @@ export async function select<T = any>(cases: SelectCase<T>[]): Promise<void> {
 
 	// Create racing promises - optimized to avoid async function overhead
 	const promises: Promise<
-		{ type: 'receive' | 'send'; case_: ReceiveCase<T> | SendCase<T>; value?: T; ok?: boolean }
+		{ type: "receive" | "send"; case_: ReceiveCase<T> | SendCase<T>; value?: T; ok?: boolean }
 	>[] = [];
 
 	// Add receive promises
 	for (const case_ of receiveCases) {
 		promises.push(
 			case_.channel.receive().then(([value, ok]) => ({
-				type: 'receive' as const,
+				type: "receive" as const,
 				case_,
 				value,
 				ok,
@@ -337,13 +337,13 @@ export async function select<T = any>(cases: SelectCase<T>[]): Promise<void> {
 	// Add send promises
 	for (const case_ of sendCases) {
 		promises.push(
-			case_.channel.send(case_.value).then(() => ({ type: 'send' as const, case_ })),
+			case_.channel.send(case_.value).then(() => ({ type: "send" as const, case_ })),
 		);
 	}
 
 	// Race and execute winner - optimized with ternary operator
 	const result = await Promise.race(promises);
-	result.type === 'receive'
+	result.type === "receive"
 		? (result.case_ as ReceiveCase<T>).action(result.value!, result.ok!)
 		: (result.case_ as SendCase<T>).action();
 }
@@ -386,4 +386,3 @@ export function send<T = any>(channel: Channel<T>, value: T): {
 export function default_(action: () => void): DefaultCase {
 	return { default: action };
 }
-

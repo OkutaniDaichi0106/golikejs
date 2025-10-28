@@ -1,7 +1,7 @@
-import { Cond, Mutex, RWMutex, Semaphore, WaitGroup } from './index.ts';
-import { assert, assertEquals } from '@std/assert';
+import { Cond, Mutex, RWMutex, Semaphore, WaitGroup } from "./index.ts";
+import { assert, assertEquals } from "@std/assert";
 
-Deno.test('golikejs package - should export all synchronization primitives', () => {
+Deno.test("golikejs package - should export all synchronization primitives", () => {
 	assert(Mutex !== undefined);
 	assert(RWMutex !== undefined);
 	assert(WaitGroup !== undefined);
@@ -9,7 +9,7 @@ Deno.test('golikejs package - should export all synchronization primitives', () 
 	assert(Cond !== undefined);
 });
 
-Deno.test('golikejs package - should create instances of all primitives', () => {
+Deno.test("golikejs package - should create instances of all primitives", () => {
 	const mutex = new Mutex();
 	const rwmutex = new RWMutex();
 	const wg = new WaitGroup();
@@ -23,7 +23,7 @@ Deno.test('golikejs package - should create instances of all primitives', () => 
 	assert(cond instanceof Cond);
 });
 
-Deno.test('golikejs package - should work together in a realistic scenario', async () => {
+Deno.test("golikejs package - should work together in a realistic scenario", async () => {
 	const mutex = new Mutex();
 	const wg = new WaitGroup();
 	const results: number[] = [];

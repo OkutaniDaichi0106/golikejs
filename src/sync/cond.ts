@@ -2,7 +2,7 @@
  * Cond implements condition variables for coordinating access to shared resources
  */
 
-import { Mutex } from './mutex.ts';
+import { Mutex } from "./mutex.ts";
 
 export class Cond {
 	#mutex: Mutex;

@@ -1,12 +1,12 @@
-import { Mutex } from './mutex.ts';
-import { assertEquals, assertThrows } from '@std/assert';
+import { Mutex } from "./mutex.ts";
+import { assertEquals, assertThrows } from "@std/assert";
 
-Deno.test('Mutex - should initially be unlocked', () => {
+Deno.test("Mutex - should initially be unlocked", () => {
 	const mutex = new Mutex();
 	assertEquals(mutex.locked, false);
 });
 
-Deno.test('Mutex - should lock and unlock successfully', async () => {
+Deno.test("Mutex - should lock and unlock successfully", async () => {
 	const mutex = new Mutex();
 	await mutex.lock();
 	assertEquals(mutex.locked, true);
@@ -15,12 +15,12 @@ Deno.test('Mutex - should lock and unlock successfully', async () => {
 	assertEquals(mutex.locked, false);
 });
 
-Deno.test('Mutex - should throw error when unlocking unlocked mutex', () => {
+Deno.test("Mutex - should throw error when unlocking unlocked mutex", () => {
 	const mutex = new Mutex();
-	assertThrows(() => mutex.unlock(), Error, 'Mutex: unlock of unlocked mutex');
+	assertThrows(() => mutex.unlock(), Error, "Mutex: unlock of unlocked mutex");
 });
 
-Deno.test('Mutex - should handle tryLock correctly', () => {
+Deno.test("Mutex - should handle tryLock correctly", () => {
 	const mutex = new Mutex();
 	assertEquals(mutex.tryLock(), true);
 	assertEquals(mutex.locked, true);
@@ -30,7 +30,7 @@ Deno.test('Mutex - should handle tryLock correctly', () => {
 	assertEquals(mutex.locked, false);
 });
 
-Deno.test('Mutex - should handle concurrent access correctly', async () => {
+Deno.test("Mutex - should handle concurrent access correctly", async () => {
 	const mutex = new Mutex();
 	const results: number[] = [];
 	const promises: Promise<void>[] = [];
@@ -55,7 +55,7 @@ Deno.test('Mutex - should handle concurrent access correctly', async () => {
 	assertEquals(new Set(results), new Set([0, 1, 2, 3, 4]));
 });
 
-Deno.test('Mutex - should maintain FIFO order for waiters', async () => {
+Deno.test("Mutex - should maintain FIFO order for waiters", async () => {
 	const mutex = new Mutex();
 	const results: number[] = [];
 
@@ -86,4 +86,3 @@ Deno.test('Mutex - should maintain FIFO order for waiters', async () => {
 
 	assertEquals(results, [0, 1, 2]);
 });
-
