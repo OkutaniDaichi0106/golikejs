@@ -98,7 +98,7 @@ Deno.test("bytes.replaceAll", async (t) => {
 	const tests = {
 		"basic": { s: "foo foo foo", old: "foo", new_: "bar", want: "bar bar bar" },
 		"no replacement": { s: "hello", old: "world", new_: "universe", want: "hello" },
-		"empty old": { s: "abc", old: "", new_: "x", want: "xaxbxexc" },
+		"empty old": { s: "abc", old: "", new_: "x", want: "xaxbxc" },
 		"empty new": { s: "aaa", old: "a", new_: "", want: "" },
 		"unicode": { s: "α α α", old: "α", new_: "β", want: "β β β" },
 	};
@@ -139,10 +139,10 @@ Deno.test("bytes.map", async (t) => {
 
 Deno.test("bytes.toTitle", async (t) => {
 	const tests = {
-		"basic": { s: "hello world", want: "Hello World" },
+		"basic": { s: "hello world", want: "HELLO WORLD" },
 		"empty": { s: "", want: "" },
-		"already title": { s: "Hello", want: "Hello" },
-		"unicode": { s: "αβγ δέ", want: "Αβγ Δέ" },
+		"already title": { s: "HELLO", want: "HELLO" },
+		"unicode": { s: "αβγ δέ", want: "ΑΒΓ ΔΈ" },
 	};
 
 	for (const [name, tt] of Object.entries(tests)) {

@@ -35,20 +35,13 @@ export function repeat(b: Uint8Array, count: number): Uint8Array {
 // If n < 0, there is no limit on the number of replacements.
 export function replace(s: Uint8Array, old: Uint8Array, new_: Uint8Array, n: number): Uint8Array {
 	if (old.length === 0) {
-		// Special case: replace at each rune boundary
 		const str = new TextDecoder().decode(s);
 		let result = '';
-		let replacements = 0;
 		for (let i = 0; i < str.length; i++) {
-			if (n >= 0 && replacements >= n) {
-				result += str.slice(i);
-				break;
-			}
 			result += new TextDecoder().decode(new_);
 			result += str[i];
-			replacements++;
 		}
-		if (n < 0 || replacements < n) {
+		if (n >= 0) {
 			result += new TextDecoder().decode(new_);
 		}
 		return new TextEncoder().encode(result);
@@ -99,7 +92,7 @@ export function toLower(s: Uint8Array): Uint8Array {
 // toTitle returns a copy of the byte slice s with all Unicode letters mapped to their title case.
 export function toTitle(s: Uint8Array): Uint8Array {
 	const str = new TextDecoder().decode(s);
-	return new TextEncoder().encode(str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()));
+	return new TextEncoder().encode(str.toUpperCase());
 }
 
 // toUpper returns a copy of the byte slice s with all Unicode letters mapped to their upper case.

@@ -96,15 +96,17 @@ export function split(s: Uint8Array, sep: Uint8Array, n: number): Uint8Array[] {
 	if (n === 0) {
 		return [];
 	}
+	if (n === 1) {
+		return [s];
+	}
 	if (sep.length === 0) {
-		// Split after each UTF-8 sequence
 		const str = new TextDecoder().decode(s);
 		const parts = [];
 		for (let i = 0; i < str.length; i++) {
 			parts.push(new TextEncoder().encode(str[i]));
 			if (n > 0 && parts.length >= n) {
 				if (i + 1 < str.length) {
-					parts[parts.length - 1] = new TextEncoder().encode(str.slice(i + 1));
+					parts[parts.length - 1] = new TextEncoder().encode(str.slice(i));
 				}
 				break;
 			}
@@ -113,20 +115,17 @@ export function split(s: Uint8Array, sep: Uint8Array, n: number): Uint8Array[] {
 	}
 	const result: Uint8Array[] = [];
 	let pos = 0;
-	let count = 0;
 	while (true) {
 		const idx = index(s.subarray(pos), sep);
 		if (idx < 0) {
-			if (pos < s.length) {
-				result.push(s.subarray(pos));
-			}
+			result.push(s.subarray(pos));
 			break;
 		}
 		result.push(s.subarray(pos, pos + idx));
 		pos += idx + sep.length;
-		count++;
-		if (n > 0 && count >= n - 1) {
-			result.push(s.subarray(pos));
+		if (n > 0 && result.length >= n) {
+			const last = result.pop()!;
+			result.push(concat(last, s.subarray(pos - sep.length)));
 			break;
 		}
 	}
@@ -143,13 +142,18 @@ export function splitAfter(s: Uint8Array, sep: Uint8Array, n: number): Uint8Arra
 	if (n === 0) {
 		return [];
 	}
+	if (n === 1) {
+		return [s];
+	}
 	if (sep.length === 0) {
-		// Split after each UTF-8 sequence
 		const str = new TextDecoder().decode(s);
-		const parts = [];
+		const parts: Uint8Array[] = [];
 		for (let i = 0; i < str.length; i++) {
-			parts.push(new TextEncoder().encode(str.slice(0, i + 1)));
+			parts.push(new TextEncoder().encode(str[i]));
 			if (n > 0 && parts.length >= n) {
+				if (i + 1 < str.length) {
+					parts[parts.length - 1] = new TextEncoder().encode(str.slice(i));
+				}
 				break;
 			}
 		}
@@ -157,19 +161,17 @@ export function splitAfter(s: Uint8Array, sep: Uint8Array, n: number): Uint8Arra
 	}
 	const result: Uint8Array[] = [];
 	let pos = 0;
-	let count = 0;
 	while (true) {
 		const idx = index(s.subarray(pos), sep);
 		if (idx < 0) {
-			if (pos < s.length) {
-				result.push(s.subarray(pos));
-			}
+			result.push(s.subarray(pos));
 			break;
 		}
 		result.push(s.subarray(pos, pos + idx + sep.length));
 		pos += idx + sep.length;
-		count++;
-		if (n > 0 && count >= n) {
+		if (n > 0 && result.length >= n) {
+			const last = result.pop()!;
+			result.push(concat(last, s.subarray(pos)));
 			break;
 		}
 	}
@@ -197,6 +199,13 @@ export function splitN(s: Uint8Array, sep: Uint8Array, n: number): Uint8Array[] 
 }
 
 // Helper functions (assuming they are defined elsewhere)
+function concat(a: Uint8Array, b: Uint8Array): Uint8Array {
+	const result = new Uint8Array(a.length + b.length);
+	result.set(a, 0);
+	result.set(b, a.length);
+	return result;
+}
+
 function index(s: Uint8Array, sep: Uint8Array): number {
 	if (sep.length === 0) {
 		return 0;
