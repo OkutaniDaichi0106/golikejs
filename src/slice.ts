@@ -13,11 +13,11 @@ type TypedArray =
 type TypedArrayConstructor = { new (length: number): TypedArray; BYTES_PER_ELEMENT?: number };
 
 export class Slice<T> implements Iterable<T> {
-	#backing: any; // Array<T> or TypedArray
-	#ctor?: TypedArrayConstructor; // present for typed arrays
-	#start: number;
-	public len: number;
-	public cap: number;
+	backing: any; // Array<T> or TypedArray
+	ctor?: TypedArrayConstructor; // present for typed arrays
+	start: number;
+	len: number;
+	cap: number;
 
 	constructor(
 		backing: any,
@@ -26,55 +26,22 @@ export class Slice<T> implements Iterable<T> {
 		cap: number,
 		ctor?: TypedArrayConstructor,
 	) {
-		this.#backing = backing;
-		this.#start = start;
+		this.backing = backing;
+		this.start = start;
 		this.len = len;
 		this.cap = cap;
-		this.#ctor = ctor;
+		this.ctor = ctor;
 	}
 
 	// index access
 	get(i: number): T {
 		if (i < 0 || i >= this.len) throw new RangeError("index out of range");
-		return this.#backing[this.#start + i];
+		return this.backing[this.start + i];
 	}
 
 	set(i: number, v: T): void {
 		if (i < 0 || i >= this.len) throw new RangeError("index out of range");
-		this.#backing[this.#start + i] = v;
-	}
-
-	// append elements, grow backing if needed (doubling strategy)
-	append(...items: T[]): void {
-		const need = this.len + items.length;
-		if (need > this.cap) {
-			// determine new cap
-			let newCap = Math.max(need, Math.max(1, this.cap) * 2);
-			if (this.#ctor) {
-				// typed array: allocate new typed array
-				const newBacking = new (this.#ctor as any)(newCap);
-				// copy existing
-				for (let i = 0; i < this.len; i++) newBacking[i] = this.#backing[this.#start + i];
-				this.#backing = newBacking;
-				this.#start = 0;
-				this.cap = newCap;
-			} else {
-				const newBacking: T[] = new Array<T>(newCap);
-				for (let i = 0; i < this.len; i++) newBacking[i] = this.#backing[this.#start + i];
-				this.#backing = newBacking;
-				this.#start = 0;
-				this.cap = newCap;
-			}
-		} else if (this.#start + this.len + items.length > this.#backing.length) {
-			// rare case for plain arrays where backing length smaller than needed
-			this.#backing.length = this.#start + this.cap;
-		}
-
-		// set items
-		for (let i = 0; i < items.length; i++) {
-			this.#backing[this.#start + this.len + i] = items[i];
-		}
-		this.len += items.length;
+		this.backing[this.start + i] = v;
 	}
 
 	// slice returns a new GoSlice that shares the same backing (like Go)
@@ -82,28 +49,27 @@ export class Slice<T> implements Iterable<T> {
 		if (a < 0) throw new RangeError("slice start out of range");
 		const bb = b === undefined ? this.len : b;
 		if (bb < a || bb > this.len) throw new RangeError("slice end out of range");
-		const newStart = this.#start + a;
+		const newStart = this.start + a;
 		const newLen = bb - a;
 		const newCap = this.cap - a;
-		return new Slice<T>(this.#backing, newStart, newLen, newCap, this.#ctor);
+		return new Slice<T>(this.backing, newStart, newLen, newCap, this.ctor);
 	}
 
 	// convert to a standard JS array or typed-array view of the current length
 	toArray(): T[] | TypedArray {
-		if (this.#ctor) {
+		if (this.ctor) {
 			// typed array: return subarray view
-			return (this.#backing as TypedArray).subarray(this.#start, this.#start + this.len);
+			return (this.backing as TypedArray).subarray(this.start, this.start + this.len);
 		}
-		return this.#backing.slice(this.#start, this.#start + this.len);
+		return this.backing.slice(this.start, this.start + this.len);
 	}
 
 	[Symbol.iterator](): Iterator<T> {
 		let i = 0;
-		const self = this;
 		return {
-			next(): IteratorResult<T> {
-				if (i < self.len) {
-					const v = self.#backing[self.#start + i];
+			next: (): IteratorResult<T> => {
+				if (i < this.len) {
+					const v = this.backing[this.start + i];
 					i++;
 					return { done: false, value: v };
 				}
@@ -173,4 +139,47 @@ export type ByteSlice = Uint8Slice;
 
 export function makeUint8(length: number, capacity?: number): Uint8Slice {
 	return new Uint8Slice(length, capacity);
+}
+
+// append function: emulate Go's append(slice, ...elements)
+export function append<T>(s: Slice<T>, ...items: T[]): Slice<T> {
+	const need = s.len + items.length;
+	if (need > s.cap) {
+		// determine new cap
+		const newCap = Math.max(need, Math.max(1, s.cap) * 2);
+		let newBacking: any;
+		const newStart = 0;
+		if (s.ctor) {
+			// typed array: allocate new typed array
+			newBacking = new (s.ctor as any)(newCap);
+			// copy existing
+			for (let i = 0; i < s.len; i++) newBacking[i] = s.backing[s.start + i];
+		} else {
+			newBacking = new Array<T>(newCap);
+			for (let i = 0; i < s.len; i++) newBacking[i] = s.backing[s.start + i];
+		}
+		// set items
+		for (let i = 0; i < items.length; i++) {
+			newBacking[s.len + i] = items[i];
+		}
+		return new Slice<T>(newBacking, newStart, need, newCap, s.ctor);
+	} else {
+		// can append in place, but since we return new slice, need to copy
+		// actually, to emulate Go, if cap allows, we can share backing but adjust len
+		// but since Slice is immutable in a way, better to create new with same backing
+		// Go's append returns a new slice descriptor
+		const newBacking = s.backing;
+		const newStart = s.start;
+		if (s.start + need > s.backing.length) {
+			// rare case, extend backing
+			if (!s.ctor) {
+				s.backing.length = s.start + s.cap;
+			}
+		}
+		// set items
+		for (let i = 0; i < items.length; i++) {
+			newBacking[s.start + s.len + i] = items[i];
+		}
+		return new Slice<T>(newBacking, newStart, need, s.cap, s.ctor);
+	}
 }
