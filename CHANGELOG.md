@@ -17,6 +17,15 @@ The format is based on "Keep a Changelog" and this project adheres to Semantic V
   - **Trim functions**: `trim`, `trimLeft`, `trimRight`, `trimSpace`, `trimPrefix`, `trimSuffix`, etc.
   - Comprehensive test coverage with Go-style table-driven tests using maps for better organization
 
+  - Added/updated tests in `src/bytes` covering `split`, `splitAfter`, `replace`, `replaceAll`, `toTitle`, and other transform functions. All `src/bytes` tests pass locally.
+
+### Fixed
+
+- **`bytes.Split` / `bytes.SplitAfter`**: Corrected behavior when using the `n` parameter so that at most `n` subslices are returned and the remainder is kept as the last element (matches Go semantics). Fixed edge cases when `n == 0` and `n == 1`.
+- **`bytes.Replace`**: Implemented the correct behavior when `old` is empty — it now matches at the beginning of the slice and after each UTF-8 sequence, yielding up to k+1 replacements for a k-rune slice (per Go spec).
+- **`bytes.ToTitle`**: Adjusted implementation and tests to follow Go's Unicode title-case mapping semantics (note: for many Latin letters `ToTitle` and `ToUpper` are equivalent, but they differ for some Unicode characters).
+
+
 ## [0.3.2] - 2025-10-22
 
 ### Added
