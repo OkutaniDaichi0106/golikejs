@@ -7,7 +7,7 @@ import { Closer } from "./closer.ts";
  * Write must return a non-nil error if it returns n < len(p).
  */
 export interface Writer {
-  write(p: Uint8Array): Promise<[number, Error | undefined]>;
+	write(p: Uint8Array): Promise<[number, Error | undefined]>;
 }
 
 /**

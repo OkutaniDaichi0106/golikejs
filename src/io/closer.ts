@@ -3,5 +3,5 @@
  * Close closes the stream.
  */
 export interface Closer {
-  close(): Promise<Error | undefined>;
+	close(): Promise<Error | undefined>;
 }
