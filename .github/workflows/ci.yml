@@ -9,37 +9,36 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node: [ 'bun' ]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
         with:
-          bun-version: 'latest'
+          deno-version: v2.x
 
-      - name: Install dependencies
-        run: |
-          bun install
+      - name: Run formatter check
+        run: deno fmt --check
+
+      - name: Run linter
+        run: deno lint
+
+      - name: Run type check
+        run: deno check src/**/*.ts
 
       - name: Run tests with coverage
-        run: |
-          bun test --coverage
+        run: deno test --coverage=coverage
 
-      - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: ./coverage
+      - name: Generate coverage report
+        run: deno coverage coverage --lcov > coverage.lcov
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: OkutaniDaichi0106/golikejs
+          files: ./coverage.lcov
 
   windows-test:
     runs-on: windows-latest
@@ -47,15 +46,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup Bun (Windows)
-        uses: oven-sh/setup-bun@v2
+      - name: Setup Deno (Windows)
+        uses: denoland/setup-deno@v2
         with:
-          bun-version: 'latest'
-
-      - name: Install dependencies
-        run: |
-          bun install
+          deno-version: v2.x
 
       - name: Run tests
-        run: |
-          bun test
+        run: deno test

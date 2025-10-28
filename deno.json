@@ -1,0 +1,50 @@
+{
+  "name": "@golikejs/golikejs",
+  "version": "0.4.0",
+  "exports": {
+    ".": "./src/index.ts",
+    "./sync": "./src/sync/index.ts",
+    "./context": "./src/context/index.ts",
+    "./channel": "./src/channel/index.ts"
+  },
+  "imports": {
+    "@std/assert": "https://deno.land/std@0.224.0/assert/mod.ts"
+  },
+  "tasks": {
+    "test": "deno test",
+    "test:watch": "deno test --watch",
+    "test:coverage": "deno test --coverage=coverage && deno coverage coverage",
+    "fmt": "deno fmt",
+    "fmt:check": "deno fmt --check",
+    "lint": "deno lint",
+    "check": "deno check src/**/*.ts"
+  },
+  "fmt": {
+    "useTabs": true,
+    "lineWidth": 100,
+    "indentWidth": 4,
+    "semiColons": true,
+    "singleQuote": false,
+    "proseWrap": "preserve",
+    "include": ["src/"]
+  },
+  "lint": {
+    "include": ["src/"],
+    "rules": {
+      "tags": ["recommended"],
+      "exclude": ["require-await", "no-unused-vars", "no-explicit-any", "no-await-in-sync-fn", "no-redeclare"]
+    }
+  },
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM", "deno.ns"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "verbatimModuleSyntax": false
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage"
+  ]
+}

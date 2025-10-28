@@ -1,3 +1,3 @@
-export * as sync from './sync';
-export * as context from './context';
-export * as channel from './channel';
+export * as sync from "./sync/index.ts";
+export * as context from "./context/index.ts";
+export * as channel from "./channel/index.ts";

@@ -1,89 +1,88 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { Mutex } from './mutex.js';
+import { Mutex } from "./mutex.ts";
+import { assertEquals, assertThrows } from "@std/assert";
 
-describe('Mutex', () => {
-  let mutex: Mutex;
+Deno.test("Mutex - should initially be unlocked", () => {
+	const mutex = new Mutex();
+	assertEquals(mutex.locked, false);
+});
 
-  beforeEach(() => {
-    mutex = new Mutex();
-  });
+Deno.test("Mutex - should lock and unlock successfully", async () => {
+	const mutex = new Mutex();
+	await mutex.lock();
+	assertEquals(mutex.locked, true);
 
-  it('should initially be unlocked', () => {
-    expect(mutex.locked).toBe(false);
-  });
+	mutex.unlock();
+	assertEquals(mutex.locked, false);
+});
 
-  it('should lock and unlock successfully', async () => {
-    await mutex.lock();
-    expect(mutex.locked).toBe(true);
-    
-    mutex.unlock();
-    expect(mutex.locked).toBe(false);
-  });
+Deno.test("Mutex - should throw error when unlocking unlocked mutex", () => {
+	const mutex = new Mutex();
+	assertThrows(() => mutex.unlock(), Error, "Mutex: unlock of unlocked mutex");
+});
 
-  it('should throw error when unlocking unlocked mutex', () => {
-    expect(() => mutex.unlock()).toThrow('Mutex: unlock of unlocked mutex');
-  });
+Deno.test("Mutex - should handle tryLock correctly", () => {
+	const mutex = new Mutex();
+	assertEquals(mutex.tryLock(), true);
+	assertEquals(mutex.locked, true);
+	assertEquals(mutex.tryLock(), false);
 
-  it('should handle tryLock correctly', () => {
-    expect(mutex.tryLock()).toBe(true);
-    expect(mutex.locked).toBe(true);
-    expect(mutex.tryLock()).toBe(false);
-    
-    mutex.unlock();
-    expect(mutex.locked).toBe(false);
-  });
+	mutex.unlock();
+	assertEquals(mutex.locked, false);
+});
 
-  it('should handle concurrent access correctly', async () => {
-    const results: number[] = [];
-    const promises: Promise<void>[] = [];
+Deno.test("Mutex - should handle concurrent access correctly", async () => {
+	const mutex = new Mutex();
+	const results: number[] = [];
+	const promises: Promise<void>[] = [];
 
-    for (let i = 0; i < 5; i++) {
-      promises.push(
-        (async (id: number) => {
-          await mutex.lock();
-          // Simulate some work
-          await new Promise(resolve => setTimeout(resolve, 10));
-          results.push(id);
-          mutex.unlock();
-        })(i)
-      );
-    }
+	for (let i = 0; i < 5; i++) {
+		promises.push(
+			(async (id: number) => {
+				await mutex.lock();
+				// Simulate some work
+				await new Promise((resolve) => setTimeout(resolve, 10));
+				results.push(id);
+				mutex.unlock();
+			})(i),
+		);
+	}
 
-    await Promise.all(promises);
-    
-    // All operations should complete
-    expect(results).toHaveLength(5);
-    // Results should contain all IDs (order may vary due to timing)
-    expect(new Set(results)).toEqual(new Set([0, 1, 2, 3, 4]));
-  });
+	await Promise.all(promises);
 
-  it('should maintain FIFO order for waiters', async () => {
-    const results: number[] = [];
-    
-    // Lock the mutex first
-    await mutex.lock();
-    
-    // Start multiple waiters
-    const promises: Promise<void>[] = [];
-    for (let i = 0; i < 3; i++) {
-      promises.push(
-        (async (id: number) => {
-          await mutex.lock();
-          results.push(id);
-          // Quick unlock to let next waiter proceed
-          setTimeout(() => mutex.unlock(), 1);
-        })(i)
-      );
-    }
-    
-    // Let waiters queue up
-    await new Promise(resolve => setTimeout(resolve, 10));
-    
-    // Unlock to start the chain
-    mutex.unlock();
-    
-    await Promise.all(promises);
-    
-    expect(results).toEqual([0, 1, 2]);
-  });
+	// All operations should complete
+	assertEquals(results.length, 5);
+	// Results should contain all IDs (order may vary due to timing)
+	assertEquals(new Set(results), new Set([0, 1, 2, 3, 4]));
+});
+
+Deno.test("Mutex - should maintain FIFO order for waiters", async () => {
+	const mutex = new Mutex();
+	const results: number[] = [];
+
+	// Lock the mutex first
+	await mutex.lock();
+
+	// Start multiple waiters
+	const promises: Promise<void>[] = [];
+	for (let i = 0; i < 3; i++) {
+		promises.push(
+			(async (id: number) => {
+				await mutex.lock();
+				results.push(id);
+				// Use a promise to delay unlock instead of setTimeout
+				await new Promise((resolve) => setTimeout(resolve, 1));
+				mutex.unlock();
+			})(i),
+		);
+	}
+
+	// Let waiters queue up
+	await new Promise((resolve) => setTimeout(resolve, 10));
+
+	// Unlock to start the chain
+	mutex.unlock();
+
+	await Promise.all(promises);
+
+	assertEquals(results, [0, 1, 2]);
 });
