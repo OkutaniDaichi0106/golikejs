@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on "Keep a Changelog" and this project adheres to Semantic Versioning.
 
+## [Unreleased]
+
+### Added
+
+- **`src/io` package**: Added comprehensive Go-like I/O utilities including readers, writers, and error handling.
+  - `src/io/closer.ts` — Interface for closable resources
+  - `src/io/error.ts` — I/O-specific error types and handling
+  - `src/io/reader.ts` — Reader interface and implementations
+  - `src/io/writer.ts` — Writer interface and implementations
+  - `src/io/mod.ts` — Main module exports for the io package
+
 ## [0.3.2] - 2025-10-22
 
 ### Added
