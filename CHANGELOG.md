@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on "Keep a Changelog" and this project adheres to Semantic Versioning.
 
+## [Unreleased]
+
+### Added
+
+- **`src/bytes` package**: Added comprehensive Go-like bytes utilities for byte slice manipulation.
+  - **Search functions**: `compare`, `contains`, `index`, `hasPrefix`, `hasSuffix`, `lastIndex`, etc.
+  - **Transform functions**: `toLower`, `toUpper`, `toTitle`, `replace`, `replaceAll`, `map`, etc.
+  - **Split/Join functions**: `split`, `join`, `fields`, `cut`, `cutPrefix`, `cutSuffix`, etc.
+  - **Trim functions**: `trim`, `trimLeft`, `trimRight`, `trimSpace`, `trimPrefix`, `trimSuffix`, etc.
+  - Comprehensive test coverage with Go-style table-driven tests using maps for better organization
+
 ## [0.3.2] - 2025-10-22
 
 ### Added
