@@ -6,13 +6,9 @@ export const MinRead = 512;
 
 export const ErrTooLarge = new Error("bytes buffer: too large");
 
-export function clone(src: Uint8Array): Uint8Array {
-	const dst = new Uint8Array(src.length);
-	dst.set(src);
-	return dst;
-}
 
-export class BytesBuffer implements Reader, Writer {
+
+export class Buffer implements Reader, Writer {
 	#buf: Uint8Array;
 	#off: number; // read offset
 	#len: number; // write offset
@@ -23,9 +19,9 @@ export class BytesBuffer implements Reader, Writer {
 		this.#len = 0; // Start with an empty buffer for writing
 	}
 
-	static make(capacity: number): BytesBuffer {
+	static make(capacity: number): Buffer {
 		const buf = new Uint8Array(capacity);
-		return new BytesBuffer(buf.buffer);
+		return new Buffer(buf.buffer);
 	}
 
 	bytes(): Uint8Array {
