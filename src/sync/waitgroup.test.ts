@@ -1,5 +1,5 @@
 import { WaitGroup } from './waitgroup.ts';
-import { assert, assertEquals, assertThrows } from './_test_util.ts';
+import { assert, assertEquals, assertThrows } from '@std/assert';
 
 Deno.test('WaitGroup - should initialize with zero counter', () => {
   const wg = new WaitGroup();

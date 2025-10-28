@@ -1,5 +1,5 @@
 import { Mutex } from './mutex.ts';
-import { assertEquals, assertThrows } from './_test_util.ts';
+import { assertEquals, assertThrows } from '@std/assert';
 
 Deno.test('Mutex - should initially be unlocked', () => {
   const mutex = new Mutex();

@@ -1,6 +1,6 @@
 import { Mutex } from './mutex.ts';
 import { Cond } from './cond.ts';
-import { assert, assertEquals } from './_test_util.ts';
+import { assert, assertEquals } from '@std/assert';
 
 // Tests for Cond (condition variable) behavior
 

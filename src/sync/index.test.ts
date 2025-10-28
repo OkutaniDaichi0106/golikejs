@@ -1,5 +1,5 @@
 import { Cond, Mutex, RWMutex, Semaphore, WaitGroup } from './index.ts';
-import { assert, assertEquals } from './_test_util.ts';
+import { assert, assertEquals } from '@std/assert';
 
 Deno.test('golikejs package - should export all synchronization primitives', () => {
   assert(Mutex !== undefined);

@@ -1,5 +1,5 @@
 import { Semaphore } from './semaphore.ts';
-import { assert, assertEquals, assertThrows } from './_test_util.ts';
+import { assert, assertEquals, assertThrows } from '@std/assert';
 
 Deno.test('Semaphore - should throw error for negative permits', () => {
   assertThrows(() => new Semaphore(-1), Error, 'Semaphore: permits must be non-negative');
