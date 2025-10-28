@@ -2,7 +2,7 @@
 // If mapping returns a negative value, the character is dropped from the string with no replacement.
 export function map(mapping: (r: number) => number, s: Uint8Array): Uint8Array {
 	const str = new TextDecoder().decode(s);
-	let result = '';
+	let result = "";
 	for (const char of str) {
 		const mapped = mapping(char.charCodeAt(0));
 		if (mapped >= 0) {
@@ -18,7 +18,7 @@ export function repeat(b: Uint8Array, count: number): Uint8Array {
 		return new Uint8Array(0);
 	}
 	if (count < 0) {
-		throw new Error('bytes: negative Repeat count');
+		throw new Error("bytes: negative Repeat count");
 	}
 	if (b.length === 0) {
 		return new Uint8Array(0);
@@ -36,7 +36,7 @@ export function repeat(b: Uint8Array, count: number): Uint8Array {
 export function replace(s: Uint8Array, old: Uint8Array, new_: Uint8Array, n: number): Uint8Array {
 	if (old.length === 0) {
 		const str = new TextDecoder().decode(s);
-		let result = '';
+		let result = "";
 		for (let i = 0; i < str.length; i++) {
 			result += new TextDecoder().decode(new_);
 			result += str[i];
@@ -74,7 +74,7 @@ export function replaceAll(s: Uint8Array, old: Uint8Array, new_: Uint8Array): Ui
 // It panics if i is out of bounds.
 export function runWhile(s: Uint8Array, i: number, r: (b: number) => boolean): Uint8Array {
 	if (i < 0 || i > s.length) {
-		throw new Error('bytes: index out of bounds');
+		throw new Error("bytes: index out of bounds");
 	}
 	let end = i;
 	while (end < s.length && r(s[end]!)) {
@@ -104,9 +104,9 @@ export function toUpper(s: Uint8Array): Uint8Array {
 // toValidUTF8 returns a copy of the byte slice s with each run of invalid UTF-8 byte sequences replaced by the replacement slice r.
 // If r is nil or empty, invalid UTF-8 byte sequences are replaced by U+FFFD.
 export function toValidUTF8(s: Uint8Array, r: Uint8Array): Uint8Array {
-	const decoder = new TextDecoder('utf-8', { fatal: false });
+	const decoder = new TextDecoder("utf-8", { fatal: false });
 	const str = decoder.decode(s);
-	const replacement = r.length > 0 ? new TextDecoder().decode(r) : '\uFFFD';
+	const replacement = r.length > 0 ? new TextDecoder().decode(r) : "\uFFFD";
 	const result = str.replace(/�/g, replacement);
 	return new TextEncoder().encode(result);
 }

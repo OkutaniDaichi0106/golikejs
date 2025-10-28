@@ -18,9 +18,9 @@ export function compare(a: Uint8Array, b: Uint8Array): number {
 
 // clone returns a copy of the given byte slice.
 export function clone(src: Uint8Array): Uint8Array {
-    const dst = new Uint8Array(src.length);
-    dst.set(src);
-    return dst;
+	const dst = new Uint8Array(src.length);
+	dst.set(src);
+	return dst;
 }
 
 // contains reports whether subslice is within b.
@@ -129,7 +129,7 @@ export function index(s: Uint8Array, sep: Uint8Array): number {
 // It returns the byte index of the first occurrence in s of any of the Unicode code points in chars.
 // It returns -1 if chars is empty or if there is no code point in common.
 export function indexAny(s: Uint8Array, chars: string): number {
-	const charSet = new Set(chars.split('').map(c => c.charCodeAt(0)));
+	const charSet = new Set(chars.split("").map((c) => c.charCodeAt(0)));
 	const str = new TextDecoder().decode(s);
 	for (let i = 0; i < str.length; i++) {
 		if (charSet.has(str.charCodeAt(i))) {
@@ -200,7 +200,7 @@ export function lastIndex(s: Uint8Array, sep: Uint8Array): number {
 // It returns the byte index of the last occurrence in s of any of the Unicode code points in chars.
 // It returns -1 if chars is empty or if there is no code point in common.
 export function lastIndexAny(s: Uint8Array, chars: string): number {
-	const charSet = new Set(chars.split('').map(c => c.charCodeAt(0)));
+	const charSet = new Set(chars.split("").map((c) => c.charCodeAt(0)));
 	const str = new TextDecoder().decode(s);
 	for (let i = str.length - 1; i >= 0; i--) {
 		if (charSet.has(str.charCodeAt(i))) {

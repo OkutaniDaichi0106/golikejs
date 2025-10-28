@@ -39,8 +39,8 @@ export function cutSuffix(s: Uint8Array, suffix: Uint8Array): [Uint8Array, boole
 // It splits the slice s around each instance of one or more consecutive white space characters, as defined by unicode.IsSpace, returning a slice of subslices of s or an empty slice if s contains only white space.
 export function fields(s: Uint8Array): Uint8Array[] {
 	const str = new TextDecoder().decode(s);
-	const fields = str.split(/\s+/).filter(f => f.length > 0);
-	return fields.map(f => new TextEncoder().encode(f));
+	const fields = str.split(/\s+/).filter((f) => f.length > 0);
+	return fields.map((f) => new TextEncoder().encode(f));
 }
 
 // fieldsFunc interprets s as a sequence of UTF-8-encoded code points.

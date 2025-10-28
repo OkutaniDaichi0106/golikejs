@@ -71,7 +71,13 @@ Deno.test("bytes.toUpper", async (t) => {
 
 Deno.test("bytes.replace", async (t) => {
 	const tests = {
-		"basic": { s: "hello world", old: "world", new_: "universe", n: -1, want: "hello universe" },
+		"basic": {
+			s: "hello world",
+			old: "world",
+			new_: "universe",
+			n: -1,
+			want: "hello universe",
+		},
 		"no replacement": { s: "hello world", old: "foo", new_: "bar", n: -1, want: "hello world" },
 		"empty old": { s: "hello", old: "", new_: "x", n: 2, want: "xhxexlxlxox" },
 		"empty new": { s: "hello", old: "l", new_: "", n: -1, want: "heo" },

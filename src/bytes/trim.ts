@@ -2,20 +2,20 @@
 export function trim(s: Uint8Array, cutset: Uint8Array): Uint8Array {
 	let start = 0;
 	let end = s.length;
-	
+
 	// Create a set of cutset bytes for fast lookup
 	const cutsetSet = new Set(cutset);
-	
+
 	// Trim from start
 	while (start < end && cutsetSet.has(s[start]!)) {
 		start++;
 	}
-	
+
 	// Trim from end
 	while (end > start && cutsetSet.has(s[end - 1]!)) {
 		end--;
 	}
-	
+
 	return s.subarray(start, end);
 }
 
@@ -37,11 +37,11 @@ export function trimFunc(s: Uint8Array, f: (r: number) => boolean): Uint8Array {
 export function trimLeft(s: Uint8Array, cutset: Uint8Array): Uint8Array {
 	let start = 0;
 	const cutsetSet = new Set(cutset);
-	
+
 	while (start < s.length && cutsetSet.has(s[start]!)) {
 		start++;
 	}
-	
+
 	return s.subarray(start);
 }
 
@@ -68,11 +68,11 @@ export function trimPrefix(s: Uint8Array, prefix: Uint8Array): Uint8Array {
 export function trimRight(s: Uint8Array, cutset: Uint8Array): Uint8Array {
 	let end = s.length;
 	const cutsetSet = new Set(cutset);
-	
+
 	while (end > 0 && cutsetSet.has(s[end - 1]!)) {
 		end--;
 	}
-	
+
 	return s.subarray(0, end);
 }
 

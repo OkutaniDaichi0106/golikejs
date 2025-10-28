@@ -13,7 +13,7 @@ Deno.test("bytes.join", async (t) => {
 
 	for (const [name, tt] of Object.entries(tests)) {
 		await t.step(name, () => {
-			const s = tt.s.map(str => new TextEncoder().encode(str));
+			const s = tt.s.map((str) => new TextEncoder().encode(str));
 			const sep = new TextEncoder().encode(tt.sep);
 			const result = bytes.join(s, sep);
 			const expected = new TextEncoder().encode(tt.want);
@@ -40,7 +40,7 @@ Deno.test("bytes.split", async (t) => {
 			const s = new TextEncoder().encode(tt.s);
 			const sep = new TextEncoder().encode(tt.sep);
 			const result = bytes.split(s, sep, tt.n);
-			const expected = tt.want.map(str => new TextEncoder().encode(str));
+			const expected = tt.want.map((str) => new TextEncoder().encode(str));
 			assertEquals(result.length, expected.length);
 			for (let i = 0; i < result.length; i++) {
 				assertEquals(result[i], expected[i]);
@@ -62,7 +62,7 @@ Deno.test("bytes.splitAfter", async (t) => {
 			const s = new TextEncoder().encode(tt.s);
 			const sep = new TextEncoder().encode(tt.sep);
 			const result = bytes.splitAfter(s, sep, tt.n);
-			const expected = tt.want.map(str => new TextEncoder().encode(str));
+			const expected = tt.want.map((str) => new TextEncoder().encode(str));
 			assertEquals(result.length, expected.length);
 			for (let i = 0; i < result.length; i++) {
 				assertEquals(result[i], expected[i]);
@@ -85,7 +85,7 @@ Deno.test("bytes.fields", async (t) => {
 		await t.step(name, () => {
 			const s = new TextEncoder().encode(tt.s);
 			const result = bytes.fields(s);
-			const expected = tt.want.map(str => new TextEncoder().encode(str));
+			const expected = tt.want.map((str) => new TextEncoder().encode(str));
 			assertEquals(result.length, expected.length);
 			for (let i = 0; i < result.length; i++) {
 				assertEquals(result[i], expected[i]);
@@ -96,11 +96,29 @@ Deno.test("bytes.fields", async (t) => {
 
 Deno.test("bytes.cut", async (t) => {
 	const tests = {
-		"found": { s: "hello world", sep: " ", wantBefore: "hello", wantAfter: "world", wantFound: true },
+		"found": {
+			s: "hello world",
+			sep: " ",
+			wantBefore: "hello",
+			wantAfter: "world",
+			wantFound: true,
+		},
 		"not found": { s: "hello", sep: ",", wantBefore: "hello", wantAfter: "", wantFound: false },
 		"empty sep": { s: "abc", sep: "", wantBefore: "", wantAfter: "abc", wantFound: true },
-		"sep at start": { s: ",hello", sep: ",", wantBefore: "", wantAfter: "hello", wantFound: true },
-		"sep at end": { s: "hello,", sep: ",", wantBefore: "hello", wantAfter: "", wantFound: true },
+		"sep at start": {
+			s: ",hello",
+			sep: ",",
+			wantBefore: "",
+			wantAfter: "hello",
+			wantFound: true,
+		},
+		"sep at end": {
+			s: "hello,",
+			sep: ",",
+			wantBefore: "hello",
+			wantAfter: "",
+			wantFound: true,
+		},
 	};
 
 	for (const [name, tt] of Object.entries(tests)) {
