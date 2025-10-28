@@ -1,55 +1,5 @@
 export * from "./buffer.ts";
-export {
-	compare,
-	clone,
-	contains,
-	containsAny,
-	count,
-	equal,
-	equalFold,
-	hasPrefix,
-	hasSuffix,
-	index,
-	indexAny,
-	indexByte,
-	indexFunc,
-	indexRune,
-	lastIndex,
-	lastIndexAny,
-	lastIndexByte,
-	lastIndexFunc,
-} from "./search.ts";
-export {
-	map,
-	repeat,
-	replace,
-	replaceAll,
-	runWhile,
-	toLower,
-	toTitle,
-	toUpper,
-	toValidUTF8,
-} from "./transform.ts";
-export {
-	cut,
-	cutPrefix,
-	cutSuffix,
-	fields,
-	fieldsFunc,
-	join,
-	split,
-	splitAfter,
-	splitAfterN,
-	splitN,
-} from "./split_join.ts";
-export {
-	trim,
-	trimFunc,
-	trimLeft,
-	trimLeftFunc,
-	trimPrefix,
-	trimRight,
-	trimRightFunc,
-	trimSpace,
-	trimSuffix,
-} from "./trim.ts";
+export * from "./search.ts";
+export * from "./transform.ts";
+export * from "./split_join.ts";
+export * from "./trim.ts";
