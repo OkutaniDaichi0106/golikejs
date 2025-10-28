@@ -15,7 +15,7 @@ export class WaitGroup {
 		this.#counter += delta;
 
 		if (this.#counter < 0) {
-			throw new Error('WaitGroup: negative counter');
+			throw new Error("WaitGroup: negative counter");
 		}
 
 		if (this.#counter === 0) {

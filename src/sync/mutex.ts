@@ -25,7 +25,7 @@ export class Mutex {
 	 */
 	unlock(): void {
 		if (!this.#locked) {
-			throw new Error('Mutex: unlock of unlocked mutex');
+			throw new Error("Mutex: unlock of unlocked mutex");
 		}
 
 		if (this.#waitQueue.length > 0) {

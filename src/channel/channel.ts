@@ -42,7 +42,24 @@ export class Channel<T> {
 				return;
 			}
 		}
+		// If there's a waiting receiver, send directly
+		if (this.#receiveWaiters.length > 0) {
+			const waiter = this.#receiveWaiters.shift();
+			if (waiter) {
+				waiter.resolve([value, true]);
+				return;
+			}
+		}
 
+		// If buffered and buffer has space, add to buffer
+		if (this.#capacity > 0 && this.#count < this.#capacity) {
+			// write at tail
+			const buf = this.#buffer!;
+			buf[this.#tail] = value;
+			this.#tail = (this.#tail + 1) % this.#capacity;
+			this.#count++;
+			return;
+		}
 		// If buffered and buffer has space, add to buffer
 		if (this.#capacity > 0 && this.#count < this.#capacity) {
 			// write at tail
@@ -83,6 +100,10 @@ export class Channel<T> {
 			}
 		}
 
+		// If channel is closed and no values, return closed signal
+		if (this.#closed) {
+			return [undefined, false];
+		}
 		// If channel is closed and no values, return closed signal
 		if (this.#closed) {
 			return [undefined, false];
@@ -365,3 +386,4 @@ export function send<T = any>(channel: Channel<T>, value: T): {
 export function default_(action: () => void): DefaultCase {
 	return { default: action };
 }
+

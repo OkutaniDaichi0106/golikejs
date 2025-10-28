@@ -86,3 +86,4 @@ Deno.test('Mutex - should maintain FIFO order for waiters', async () => {
 
 	assertEquals(results, [0, 1, 2]);
 });
+

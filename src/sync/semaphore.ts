@@ -44,16 +44,16 @@ export class Semaphore {
 		}
 	}
 
-	/**
-	 * Try to acquire a permit without waiting. Returns true if successful.
-	 */
-	tryAcquire(): boolean {
-		if (this.#permits > 0) {
-			this.#permits--;
-			return true;
-		}
-		return false;
-	}
+  /**
+   * Try to acquire a permit without waiting. Returns true if successful.
+   */
+  tryAcquire(): boolean {
+    if (this.#permits > 0) {
+      this.#permits--;
+      return true;
+    }
+    return false;
+  }
 
 	/**
 	 * Get available permits count
@@ -69,3 +69,4 @@ export class Semaphore {
 		return this.#waitQueue.length;
 	}
 }
+

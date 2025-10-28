@@ -27,7 +27,7 @@ export class RWMutex {
 	 */
 	unlock(): void {
 		if (!this.#writeLocked) {
-			throw new Error('RWMutex: unlock of unlocked write mutex');
+			throw new Error("RWMutex: unlock of unlocked write mutex");
 		}
 
 		this.#writeLocked = false;
@@ -56,7 +56,7 @@ export class RWMutex {
 	 */
 	runlock(): void {
 		if (this.#readCount === 0) {
-			throw new Error('RWMutex: runlock of unlocked read mutex');
+			throw new Error("RWMutex: runlock of unlocked read mutex");
 		}
 
 		this.#readCount--;

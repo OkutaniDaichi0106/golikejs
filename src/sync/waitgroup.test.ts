@@ -204,3 +204,4 @@ Deno.test('WaitGroup - should call done even if go function throws', async () =>
 	assertEquals(errorCaught, true);
 	assertEquals(wg.counter, 0);
 });
+

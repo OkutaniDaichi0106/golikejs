@@ -1,1 +1,1 @@
-export const EOF = new Error('EOF');
+export const EOF = new Error("EOF");
