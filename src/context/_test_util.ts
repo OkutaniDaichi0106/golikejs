@@ -56,17 +56,21 @@ export function assert(expr: unknown, msg = ''): asserts expr {
   }
 }
 
-export function assertThrows<E extends Error = Error>(
-  fn: () => unknown,
+export async function assertThrows<E extends Error = Error>(
+  fn: () => unknown | Promise<unknown>,
   // deno-lint-ignore no-explicit-any
   ErrorClass?: ErrorConstructor | (new (...args: any[]) => E),
   msgIncludes?: string,
   msg?: string,
-): void {
+): Promise<void> {
   let doesThrow = false;
   let error: Error | undefined = undefined;
   try {
-    fn();
+    const result = fn();
+    // Handle async functions
+    if (result instanceof Promise) {
+      await result;
+    }
   } catch (e) {
     if (e instanceof Error) {
       doesThrow = true;
