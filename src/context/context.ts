@@ -13,8 +13,21 @@ export interface Context {
 export type CancelFunc = () => void;
 export type CancelCauseFunc = (err: Error | undefined) => void;
 
-export const ContextCancelledError = new Error('Context cancelled');
-export const ContextTimeoutError = new Error('Context timeout');
+export class ContextCancelledError extends Error {
+  constructor(message = 'Context cancelled') {
+    super(message);
+    this.name = 'ContextCancelledError';
+    Object.setPrototypeOf(this, ContextCancelledError.prototype);
+  }
+}
+
+export class ContextTimeoutError extends Error {
+  constructor(message = 'context deadline exceeded') {
+    super(message);
+    this.name = 'ContextTimeoutError';
+    Object.setPrototypeOf(this, ContextTimeoutError.prototype);
+  }
+}
 
 class DefaultContext implements Context {
   // Lazily-created done promise and its resolver. If never awaited, we avoid
@@ -61,7 +74,7 @@ class DefaultContext implements Context {
 
     if (arguments.length === 0) {
       // No argument passed -> default cancellation error
-      this.#err = ContextCancelledError;
+      this.#err = new ContextCancelledError();
     } else {
       // Explicit argument passed (possibly undefined) -> set as-is
       this.#err = err;
@@ -112,7 +125,7 @@ export function watchSignal(parent: Context, signal: AbortSignal): Context {
     context.cancel(
       (signal as any).reason instanceof Error
         ? (signal as any).reason as Error
-        : ContextCancelledError,
+        : new ContextCancelledError(),
     );
   };
 
@@ -143,7 +156,7 @@ export function withAbort(parent: Context): [Context, AbortController] {
     context.cancel(
       (ac.signal as any).reason instanceof Error
         ? (ac.signal as any).reason as Error
-        : ContextCancelledError,
+        : new ContextCancelledError(),
     );
   };
 
@@ -170,7 +183,7 @@ export function withAbort(parent: Context): [Context, AbortController] {
 
 export function withCancel(parent: Context): [Context, CancelFunc] {
   const context = new DefaultContext(parent);
-  return [context, () => context.cancel(ContextCancelledError)];
+  return [context, () => context.cancel(new ContextCancelledError())];
 }
 
 export function withCancelCause(parent: Context): [Context, CancelCauseFunc] {
@@ -181,7 +194,7 @@ export function withCancelCause(parent: Context): [Context, CancelCauseFunc] {
 export function withTimeout(parent: Context, timeoutMs: number): Context {
   const context = new DefaultContext(parent);
   const id = setTimeout(() => {
-    context.cancel(new Error(`Context timeout after ${timeoutMs}ms`));
+    context.cancel(new ContextTimeoutError());
   }, timeoutMs);
   context.done().finally(() => clearTimeout(id));
   return context;

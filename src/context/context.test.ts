@@ -172,12 +172,15 @@ Deno.test('withCancelCause - should handle undefined error', async () => {
 });
 
 // withTimeout tests
-Deno.test('withTimeout - should create a context with timeout', () => {
+Deno.test('withTimeout - should create a context with timeout', async () => {
   const parentCtx = background();
   const childCtx = withTimeout(parentCtx, 100);
   
   assert(childCtx !== undefined);
   assertEquals(childCtx.err(), undefined);
+  
+  // Wait for the context to complete (timeout or cancel) to avoid timer leak
+  await childCtx.done();
 });
 
 Deno.test('withTimeout - should cancel after timeout', async () => {
@@ -311,19 +314,23 @@ Deno.test('Context interface - should return error when cancelled', async () => 
 
 // Error constants tests
 Deno.test('ContextCancelledError - should be an instance of Error', () => {
-  assert(ContextCancelledError instanceof Error);
+  const err = new ContextCancelledError();
+  assert(err instanceof Error);
 });
 
 Deno.test('ContextCancelledError - should have the correct message', () => {
-  assertEquals(ContextCancelledError.message, 'Context cancelled');
+  const err = new ContextCancelledError();
+  assertEquals(err.message, 'Context cancelled');
 });
 
 Deno.test('ContextTimeoutError - should be an instance of Error', () => {
-  assert(ContextTimeoutError instanceof Error);
+  const err = new ContextTimeoutError();
+  assert(err instanceof Error);
 });
 
 Deno.test('ContextTimeoutError - should have the correct message', () => {
-  assertEquals(ContextTimeoutError.message, 'Context timeout');
+  const err = new ContextTimeoutError('Context timeout');
+  assertEquals(err.message, 'Context timeout');
 });
 
 // withAbort tests

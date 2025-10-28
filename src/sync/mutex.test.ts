@@ -69,8 +69,9 @@ Deno.test('Mutex - should maintain FIFO order for waiters', async () => {
       (async (id: number) => {
         await mutex.lock();
         results.push(id);
-        // Quick unlock to let next waiter proceed
-        setTimeout(() => mutex.unlock(), 1);
+        // Use a promise to delay unlock instead of setTimeout
+        await new Promise((resolve) => setTimeout(resolve, 1));
+        mutex.unlock();
       })(i),
     );
   }

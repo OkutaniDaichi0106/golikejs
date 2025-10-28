@@ -109,8 +109,9 @@ Deno.test('Semaphore - should maintain FIFO order for waiters', async () => {
       (async (id: number) => {
         await sem.acquire();
         results.push(id);
-        // Quick release to let next waiter proceed
-        setTimeout(() => sem.release(), 1);
+        // Use a promise to delay release instead of setTimeout
+        await new Promise((resolve) => setTimeout(resolve, 1));
+        sem.release();
       })(i),
     );
   }
