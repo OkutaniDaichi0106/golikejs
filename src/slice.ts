@@ -19,18 +19,19 @@ export class Slice<T> implements Iterable<T> {
 	len: number;
 	cap: number;
 
-	constructor(
-		backing: any,
-		start: number,
-		len: number,
-		cap: number,
-		ctor?: TypedArrayConstructor,
-	) {
+	constructor(backing: any, start: number, len: number, cap: number) {
 		this.backing = backing;
 		this.start = start;
 		this.len = len;
 		this.cap = cap;
-		this.ctor = ctor;
+		// infer typed array constructor from backing if it's a typed array view
+		// ArrayBuffer.isView returns true for typed arrays and DataView; exclude DataView
+		if (ArrayBuffer.isView(backing) && !(backing instanceof DataView)) {
+			// the constructor property of the typed array is the constructor function
+			this.ctor = backing.constructor as TypedArrayConstructor;
+		} else {
+			this.ctor = undefined;
+		}
 	}
 
 	// index access
@@ -44,7 +45,7 @@ export class Slice<T> implements Iterable<T> {
 		this.backing[this.start + i] = v;
 	}
 
-	// slice returns a new GoSlice that shares the same backing (like Go)
+	// slice returns a new Slice that shares the same backing (like Go)
 	slice(a = 0, b?: number): Slice<T> {
 		if (a < 0) throw new RangeError("slice start out of range");
 		const bb = b === undefined ? this.len : b;
@@ -52,7 +53,7 @@ export class Slice<T> implements Iterable<T> {
 		const newStart = this.start + a;
 		const newLen = bb - a;
 		const newCap = this.cap - a;
-		return new Slice<T>(this.backing, newStart, newLen, newCap, this.ctor);
+		return new Slice<T>(this.backing, newStart, newLen, newCap);
 	}
 
 	// convert to a standard JS array or typed-array view of the current length
@@ -81,8 +82,8 @@ export class Slice<T> implements Iterable<T> {
 
 // make function: emulate Go's make for slices and for typed arrays when a constructor is provided.
 // Usage patterns implemented:
-// - make(Array, len, cap?) -> GoSlice<T>
-// - make(Uint8Array, len, cap?) -> GoSlice<number> backed by Uint8Array
+// - make(Array, len, cap?) -> Slice<T>
+// - make(Uint8Array, len, cap?) -> Slice<number> backed by Uint8Array
 // - make(Map, initialCapacity?) -> Map
 // Notes: Channels are not implemented here.
 export function make<T>(ctor: any, length: number, capacity?: number): Slice<T> | Map<any, any> {
@@ -107,38 +108,12 @@ export function make<T>(ctor: any, length: number, capacity?: number): Slice<T> 
 	) {
 		const backing = new (ctor as TypedArrayConstructor)(cap);
 		// zero-initialized; len may be smaller than cap
-		return new Slice<T>(backing, 0, length, cap, ctor as TypedArrayConstructor);
+		return new Slice<T>(backing, 0, length, cap);
 	}
 
 	// default: plain JS array backing
 	const backing = new Array<T>(cap);
 	return new Slice<T>(backing, 0, length, cap);
-}
-
-// Convenience types and helpers for byte slices (Go's []byte)
-export type Byte = number;
-
-/**
- * Uint8Slice is a convenience subclass of Slice<number> backed by a Uint8Array.
- * Use `makeUint8(len, cap?)` to construct one.
- */
-export class Uint8Slice extends Slice<number> {
-	constructor(length: number, capacity?: number) {
-		const cap = capacity === undefined ? length : capacity;
-		const backing = new Uint8Array(cap);
-		super(backing, 0, length, cap, Uint8Array);
-	}
-
-	// Narrow the return type to Uint8Array for convenience.
-	override toArray(): Uint8Array {
-		return super.toArray() as Uint8Array;
-	}
-}
-
-export type ByteSlice = Uint8Slice;
-
-export function makeUint8(length: number, capacity?: number): Uint8Slice {
-	return new Uint8Slice(length, capacity);
 }
 
 // append function: emulate Go's append(slice, ...elements)
@@ -162,7 +137,7 @@ export function append<T>(s: Slice<T>, ...items: T[]): Slice<T> {
 		for (let i = 0; i < items.length; i++) {
 			newBacking[s.len + i] = items[i];
 		}
-		return new Slice<T>(newBacking, newStart, need, newCap, s.ctor);
+		return new Slice<T>(newBacking, newStart, need, newCap);
 	} else {
 		// can append in place, but since we return new slice, need to copy
 		// actually, to emulate Go, if cap allows, we can share backing but adjust len
@@ -180,6 +155,6 @@ export function append<T>(s: Slice<T>, ...items: T[]): Slice<T> {
 		for (let i = 0; i < items.length; i++) {
 			newBacking[s.start + s.len + i] = items[i];
 		}
-		return new Slice<T>(newBacking, newStart, need, s.cap, s.ctor);
+		return new Slice<T>(newBacking, newStart, need, s.cap);
 	}
 }
