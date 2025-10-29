@@ -11,6 +11,14 @@ export interface Writer {
 }
 
 /**
+ * WriterTo is implemented by types that can write their contents to w. The
+ * method returns the number of bytes written and an optional error.
+ */
+export interface WriterTo {
+	writeTo(w: Writer): Promise<[number, Error | undefined]>;
+}
+
+/**
  * WriteCloser is the interface that groups the basic Write and Close methods.
  */
 export interface WriteCloser extends Writer, Closer {}

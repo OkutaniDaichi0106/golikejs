@@ -13,6 +13,15 @@ export interface Reader {
 }
 
 /**
+ * ReaderFrom is implemented by types that can read data from r until EOF and
+ * append it to themselves. The method returns the number of bytes read and an
+ * optional error.
+ */
+export interface ReaderFrom {
+	readFrom(r: Reader): Promise<[number, Error | undefined]>;
+}
+
+/**
  * ReadCloser is the interface that groups the basic Read and Close methods.
  */
 export interface ReadCloser extends Reader, Closer {}

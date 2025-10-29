@@ -1,0 +1,45 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  runtimes:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runtime: [deno, node, bun]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Deno
+        if: matrix.runtime == 'deno'
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: vx.x.x
+
+      - name: Setup Node
+        if: matrix.runtime == 'node'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      - name: Setup Bun
+        if: matrix.runtime == 'bun'
+        uses: oven-sh/setup-bun@v1
+
+      - name: Run Deno tests
+        if: matrix.runtime == 'deno'
+        run: deno test --allow-all
+
+      - name: Test Node import
+        if: matrix.runtime == 'node'
+        run: |
+          node -e "import('./mod.js').then(m => console.log(m.greet('Node')))"
+
+      - name: Test Bun import
+        if: matrix.runtime == 'bun'
+        run: |
+          bun run -e "import('./mod.js').then(m => console.log(m.greet('Bun')))"

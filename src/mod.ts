@@ -4,7 +4,6 @@
  * This module contains sub-modules for:
  * - {@link sync} Synchronous programming utilities
  * - {@link context}Context management
- * - {@link channel} Channel-based concurrency
  * - {@link bytes} Bytes manipulation
  * - {@link io} Input/Output operations
  *
