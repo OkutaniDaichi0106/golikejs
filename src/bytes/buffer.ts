@@ -7,6 +7,9 @@ import { EOFError } from "../io/error.ts";
 import { Reader } from "../io/reader.ts";
 import { Writer } from "../io/writer.ts";
 
+// Re-export io types that Buffer implements
+export type { Reader, Writer };
+
 /**
  * MinRead is the minimum read size for Buffer.readFrom operations.
  */
