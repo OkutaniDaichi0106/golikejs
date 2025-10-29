@@ -1,12 +1,11 @@
 {
   "$schema": "https://deno.land/x/deno/cli/schemas/config-file.v1.json",
   "name": "@okudai/golikejs",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "exports": {
     ".": "./src/mod.ts",
     "./sync": "./src/sync/mod.ts",
     "./context": "./src/context/mod.ts",
-    "./channel": "./src/channel/mod.ts",
     "./bytes": "./src/bytes/mod.ts",
     "./io": "./src/io/mod.ts"
   },
