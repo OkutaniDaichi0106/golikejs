@@ -60,6 +60,15 @@ body:
     validations:
       required: false
 
+  - type: input
+    id: related_issues
+    attributes:
+      label: "Related issues"
+      description: "Please provide the issue number or URL of related issues (optional). Example: #123, https://github.com/owner/repo/issues/123"
+      placeholder: "#123, https://github.com/owner/repo/issues/123"
+    validations:
+      required: false
+
   - type: checkboxes
     id: checklist
     attributes:
