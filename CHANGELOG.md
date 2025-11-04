@@ -8,6 +8,8 @@ The format is based on "Keep a Changelog" and this project adheres to Semantic V
 
 ## [Unreleased]
 
+## [0.6.0] - 2025-11-04
+
 ### Added
 
 - **`src/bytes` package**: Added comprehensive Go-like bytes utilities for byte slice manipulation.
@@ -16,7 +18,6 @@ The format is based on "Keep a Changelog" and this project adheres to Semantic V
   - **Split/Join functions**: `split`, `join`, `fields`, `cut`, `cutPrefix`, `cutSuffix`, etc.
   - **Trim functions**: `trim`, `trimLeft`, `trimRight`, `trimSpace`, `trimPrefix`, `trimSuffix`, etc.
   - Comprehensive test coverage with Go-style table-driven tests using maps for better organization
-
   - Added/updated tests in `src/bytes` covering `split`, `splitAfter`, `replace`, `replaceAll`, `toTitle`, and other transform functions. All `src/bytes` tests pass locally.
 
 ### Fixed
@@ -25,15 +26,12 @@ The format is based on "Keep a Changelog" and this project adheres to Semantic V
 - **`bytes.Replace`**: Implemented the correct behavior when `old` is empty — it now matches at the beginning of the slice and after each UTF-8 sequence, yielding up to k+1 replacements for a k-rune slice (per Go spec).
 - **`bytes.ToTitle`**: Adjusted implementation and tests to follow Go's Unicode title-case mapping semantics (note: for many Latin letters `ToTitle` and `ToUpper` are equivalent, but they differ for some Unicode characters).
 
-
 ### Changed
 
 - **Channel module moved**: Moved the `Channel` implementation from `src/channel` into the main module (`src/mod.ts`) and removed the standalone `src/channel` module. Update imports from `./channel` to the package root (e.g. `import { Channel } from "@golikejs/golikejs"`) or use the re-export stub if provided to preserve compatibility.
-
-### Changed
-
 - Improve `bytes.Buffer`: add rune support, fast-paths for `readFrom`/`writeTo`, and clarify `readBytes`/`readString` EOF behavior.
-- Add `runtime_test.yml`, bump `deno.json` to `0.5.2`, and add module docs in `mod.ts`.
+- Add `runtime_test.yml`, bump `deno.json` to `0.6.0`, and add module docs in `mod.ts`.
+- Updated CONTRIBUTING.md to reflect golikejs project structure and Deno-based development workflow.
 
 (Related issues: #8, #9)
 
