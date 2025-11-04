@@ -22,8 +22,8 @@ Before you begin, ensure you have the following installed:
 
 1. Fork and clone the repository:
    ```bash
-   git clone https://github.com/your-username/gosync.git
-   cd gosync
+   git clone https://github.com/your-username/golikejs.git
+   cd golikejs
    ```
 
 2. Verify your setup:
@@ -36,7 +36,7 @@ Before you begin, ensure you have the following installed:
 
 ### 1. Choose an Issue
 
-- Check existing [issues](https://github.com/OkutaniDaichi0106/gosync/issues) for good first issues
+- Check existing [issues](https://github.com/OkutaniDaichi0106/golikejs/issues) for good first issues
 - Look for issues labeled `good first issue` or `help wanted`
 - Comment on the issue to indicate you're working on it
 
