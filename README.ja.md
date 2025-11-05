@@ -1,55 +1,34 @@
 
-
-# golikejs（日本語）
+# golikejs
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **Note**: このプロジェクトは Deno に移行しました。詳細は英語版 README.md を参照してください。
+> Go の標準パッケージで提供される機能を、JavaScript / TypeScript ランタイム向けに再実装したライブラリです。
 
-golikejs は、Go の標準ライブラリの一部を JavaScript / TypeScript 向けに再実装することを目的とした小さなライブラリです。実用的な API の互換性を重視し、JS/TS 環境で Go の並行処理パターン（同期プリミティブやコンテキストのキャンセルなど）を使いやすく提供します。
+golikejs は、Go で馴染みのある設計を JavaScript / TypeScript でそのまま使えることを目的としたライブラリです。Go 標準ライブラリとの実用的な API 互換性を重視し、並行処理プリミティブや読み書き処理などを提供します。
 
-インストール
+## パッケージ
 
-**Deno**
+- **[sync](./src/sync/)** — 排他制御処理、待ち合わせ、条件変数などの同期プリミティブ
+- **[context](./src/context/)** — キャンセルやタイムアウトを伝播するコンテキスト
+- **[bytes](./src/bytes/)** — バッファおよびバイト操作のためのユーティリティ
+- **[io](./src/io/)** — 読み込み、書き込み操作のための実装とインターフェース
 
-```ts
-import { Mutex } from 'https://deno.land/x/golikejs/src/sync/index.ts';
-```
+## インストール
 
-詳細なドキュメントは [README.md](./README.md) を参照してください。
+| パッケージマネージャー | コマンド |
+| --- | --- |
+| Deno | `deno add jsr:@okudai/golikejs` |
+| npm | `npx jsr add @okudai/golikejs` |
+| pnpm | `pnpm i jsr:@okudai/golikejs` |
+| Bun | `bunx jsr add @okudai/golikejs` |
+| yarn | `yarn add jsr:@okudai/golikejs` |
+| vlt | `vlt install jsr:@okudai/golikejs` |
 
-目次
-
-- 特徴
-- インストール
-- クイックスタート（例）
-  - Mutex
-  - Channel
-  - Context
-  - Cond
-  - Semaphore
-  - WaitGroup
-- API サマリ
-- ビルド & テスト
-- パブリッシュ
-- コントリビュート
-- ライセンス
-
-特徴
-
-- Mutex, RWMutex — Go のセマンティクスに準拠した相互排他プリミティブ
-- WaitGroup — 複数の非同期タスクの完了を待つユーティリティ
-- Semaphore — カウントセマフォ
-- Channel<T> — 非バッファ/バッファ付きチャネル（送受信セマンティクスを再現）
-- Cond — 条件変数
-- Context — キャンセル伝播や done/error セマンティクスを持つ Context ヘルパー
-
-クイックスタート（抜粋）
-
-Mutex
+### クイックスタート
 
 ```ts
-import { Mutex } from 'https://deno.land/x/golikejs/src/sync/index.ts';
+import { Mutex } from 'jsr:@okudai/golikejs/sync';
 
 const m = new Mutex();
 await m.lock();
@@ -60,123 +39,31 @@ try {
 }
 ```
 
-Channel（バッファ付き）
+より詳しい使用例や API の説明は、各パッケージ配下の `README.md` をご参照ください。
 
-```ts
-import { Channel } from 'golikejs';
+## 開発
 
-const ch = new Channel<number>(3);
-await ch.send(1);
-const v = await ch.receive();
-```
+本プロジェクトは、開発・テスト環境にDenoを使っています。
 
-Context（キャンセル）
+### 前提条件
 
-```ts
-import { context } from 'golikejs';
+- [Deno](https://deno.land/) 2.x 以上
 
-const ctx = context.withCancel(context.Background());
-// キャンセルを監視する実装例
-const task = async (ctx) => {
-  await ctx.done; // cancel されると解決される
-};
+### コマンド
 
-ctx.cancel(new Error('shutdown'));
-```
+| タスク | コマンド |
+| --- | --- |
+| テスト | `deno task test` |
+| カバレッジ付きテスト | `deno task test:coverage` |
+| コード整形 | `deno task fmt` |
+| Lint（静的解析） | `deno task lint` |
+| 型チェック | `deno task check` |
 
-Cond
+## 貢献
 
-```ts
-import { Cond, Mutex } from 'golikejs';
+貢献に関するガイドラインは、[CONTRIBUTING.md](./CONTRIBUTING.md) をご参照ください。
 
-const mu = new Mutex();
-const cond = new Cond(mu);
+## ライセンス
 
-// 待機側
-await mu.lock();
-try {
-  await cond.wait();
-} finally {
-  mu.unlock();
-}
-
-// シグナル送信側
-await mu.lock();
-try {
-  cond.signal();
-} finally {
-  mu.unlock();
-}
-```
-
-Semaphore
-
-```ts
-import { Semaphore } from 'golikejs';
-
-const s = new Semaphore(2);
-await s.acquire();
-try {
-  // 同時実行数制限された処理
-} finally {
-  s.release();
-}
-```
-
-WaitGroup
-
-```ts
-import { WaitGroup } from 'golikejs';
-
-const wg = new WaitGroup();
-wg.add(1);
-(async () => {
-  try {
-    // 作業
-  } finally {
-    wg.done();
-  }
-})();
-await wg.wait();
-```
-
-API サマリ
-
-- Mutex: `lock()`, `unlock()`, `tryLock()`
-- RWMutex: `rlock()`, `runlock()`, `lock()`, `unlock()`
-- WaitGroup: `add()`, `done()`, `wait()`
-- Semaphore: `acquire()`, `release()`, `tryAcquire()`
-- Channel<T>: `send()`, `receive()`, `trySend()`, `tryReceive()`, `close()`
-- Cond: `wait()`, `signal()`, `broadcast()`
-- Context モジュール: `Background()`, `withCancel()`, `withTimeout()`, `withDeadline()` など（実装の詳細はソース API を参照してください）
-
-ビルド & テスト
-
-- Bun を推奨しています。テストは以下で実行できます:
-
-```bash
-bun test
-```
-
-- ビルド（必要な場合）:
-
-```bash
-bun run build
-```
-
-パブリッシュ
-
-自動パブリッシュ用の GitHub Actions ワークフローが含まれています。リリース作成や `v*` タグのプッシュで npm に公開されます。公開を有効にする手順:
-
-1. npm にアクセスしてトークンを作成（npmjs.com の Settings → Access Tokens）。
-2. GitHub のリポジトリ設定で `NPM_TOKEN` シークレットを追加する。
-3. タグ（例: `v1.0.0`）を作成してプッシュ、または GitHub Release を作成します。`publish` ワークフローが実行され、npm へ公開されます。
-
-コントリビュート
-
-バグ報告や PR は歓迎します。提案は Issue で話し合い、変更はテストを含めて PR を作成してください。API はできるだけ Go の慣習に沿って安定させる方針です。
-
-ライセンス
-
-MIT
+ライセンスの詳細は、[LICENSE](./LICENSE) をご確認ください。
 

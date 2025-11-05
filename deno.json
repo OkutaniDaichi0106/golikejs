@@ -10,7 +10,7 @@
     "./io": "./src/io/mod.ts"
   },
   "imports": {
-    "@std/assert": "https://deno.land/std@0.224.0/assert/mod.ts"
+    "@std/assert": "jsr:@std/assert"
   },
   "tasks": {
     "test": "deno test",
