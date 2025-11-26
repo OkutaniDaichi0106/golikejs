@@ -29,7 +29,7 @@ class EOFError extends Error
 ```
 
 ```ts
-constructor()
+constructor();
 ```
 
 ### Reader
