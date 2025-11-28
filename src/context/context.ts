@@ -38,7 +38,19 @@ class DefaultContext implements Context {
 
 	constructor(parent?: Context) {
 		if (parent) {
-			// Propagate parent cancellation (simplified for idempotency)
+			// If parent already has an error (cancelled or errored), propagate
+			// synchronously to avoid surprising microtask scheduling delays.
+			// Note: `parent.err()` being `undefined` is ambiguous (not done OR
+			// finished without error), so we only synchronous-propagate when
+			// the parent has a concrete error value.
+			const parentErr = parent.err();
+			if (parentErr !== undefined) {
+				this.cancel(parentErr);
+				return; // already finished (cancelled/errored) - nothing else to do
+			}
+
+			// Propagate parent cancellation asynchronously for later cancellation
+			// and for the case where the parent finishes without error.
 			parent.done().then(() => {
 				this.cancel(parent.err()); // cancel is idempotent
 			});
