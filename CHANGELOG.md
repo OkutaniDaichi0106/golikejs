@@ -8,6 +8,16 @@ The format is based on "Keep a Changelog" and this project adheres to Semantic V
 
 ## [Unreleased]
 
+### Added
+
+- **`src/errors` package**: Added Go-like error handling utilities.
+  - **`as()` function**: TypeScript adaptation of Go's `errors.As` for type-safe error checking and casting.
+  - **`is()` function**: TypeScript adaptation of Go's `errors.Is` for error chain checking.
+  - **`newError()` function**: TypeScript adaptation of Go's `errors.New` for creating errors.
+  - **`wrap()` function**: TypeScript adaptation of Go's `errors.Wrap` for wrapping errors with additional context.
+  - **`unwrap()` function**: TypeScript adaptation of Go's `errors.Unwrap` for unwrapping error chains.
+  - Full test coverage with Deno test framework using hierarchical subtests.
+
 ## [0.6.0] - 2025-11-04
 
 ### Added
