@@ -8,6 +8,13 @@ The format is based on "Keep a Changelog" and this project adheres to Semantic V
 
 ## [Unreleased]
 
+## [0.6.1] - 2025-12-09
+
+### Changed
+
+- **Package name**: Changed package prefix from `@okudai/golikejs` to `@okdaichi/golikejs` to match the updated username.
+- **Repository URL**: Updated remote repository URL from `OkutaniDaichi0106/gosync` to `okdaichi/golikejs`.
+
 ## [0.6.0] - 2025-11-04
 
 ### Added
