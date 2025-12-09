@@ -1,16 +1,16 @@
 contact_links:
   - name: "💬 Questions"
-    url: https://github.com/OkutaniDaichi0106/golikejs/discussions
+    url: https://github.com/okdaichi/golikejs/discussions
     about: "Use Discussions for implementation and usage questions"
 
   - name: "📚 Documentation"
-    url: https://github.com/OkutaniDaichi0106/golikejs/tree/main/docs
+    url: https://github.com/okdaichi/golikejs/tree/main/docs
     about: "Project documentation"
 
   - name: "🔐 Security Report"
-    url: https://github.com/OkutaniDaichi0106/golikejs/security/advisories
+    url: https://github.com/okdaichi/golikejs/security/advisories
     about: "Report security vulnerabilities directly"
 
   - name: "🤝 Contributing"
-    url: https://github.com/OkutaniDaichi0106/golikejs/blob/main/CONTRIBUTING.md
+    url: https://github.com/okdaichi/golikejs/blob/main/CONTRIBUTING.md
     about: "Please read our contributing guidelines"

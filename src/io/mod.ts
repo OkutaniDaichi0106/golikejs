@@ -12,11 +12,11 @@
  *
  * Example
  * ```ts
- * import { io } from "@okudai/golikejs";
+ * import { io } from "@okdaichi/golikejs";
  * // implement a Reader by providing an async read(p: Uint8Array) method
  * ```
  *
- * @module @okudai/golikejs/io
+ * @module @okdaichi/golikejs/io
  */
 
 export * from "./error.ts";

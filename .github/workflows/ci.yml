@@ -37,7 +37,7 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: OkutaniDaichi0106/golikejs
+          slug: okdaichi/golikejs
           files: ./coverage.lcov
 
   windows-test:

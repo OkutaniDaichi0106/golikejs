@@ -17,11 +17,11 @@
  *     sync,
  *     bytes,
  *     io,
- * } from "@okudai/golikejs";
+ * } from "@okdaichi/golikejs";
  *
  * ```
  *
- * @module @okudai/golikejs
+ * @module @okdaichi/golikejs
  */
 
 export * from "./slice.ts";

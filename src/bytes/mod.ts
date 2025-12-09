@@ -15,14 +15,14 @@
  *
  * Example
  * ```ts
- * import { bytes } from "@okudai/golikejs";
+ * import { bytes } from "@okdaichi/golikejs";
  * const b = bytes.Buffer.make(128);
  * await b.write(new TextEncoder().encode("hello"));
  * const buf = b.bytes();
  * console.log(new TextDecoder().decode(buf));
  * ```
  *
- * @module @okudai/golikejs/bytes
+ * @module @okdaichi/golikejs/bytes
  */
 
 export * from "./buffer.ts";

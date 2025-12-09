@@ -16,14 +16,14 @@
  *
  * Example
  * ```ts
- * import { context } from "@okudai/golikejs";
+ * import { context } from "@okdaichi/golikejs";
  *
  * const ctx = context.background();
  * const child = context.withTimeout(ctx, 5000);
  * // use `child` in async work; it will cancel after 5s or when parent cancels
  * ```
  *
- * @module @okudai/golikejs/context
+ * @module @okdaichi/golikejs/context
  */
 
 export * from "./context.ts";

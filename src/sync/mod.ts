@@ -15,7 +15,7 @@
  *
  * Example
  * ```ts
- * import { sync } from "@okudai/golikejs";
+ * import { sync } from "@okdaichi/golikejs";
  * const mu = new sync.Mutex();
  * await mu.lock();
  * try {
@@ -25,7 +25,7 @@
  * }
  * ```
  *
- * @module @okudai/golikejs/sync
+ * @module @okdaichi/golikejs/sync
  */
 
 export * from "./mutex.ts";

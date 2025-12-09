@@ -19,17 +19,17 @@ It aims to provide practical API compatibility with Go’s standard library and 
 
 | Package Manager | Command |
 | --- | --- |
-| Deno | `deno add jsr:@okudai/golikejs` |
-| npm | `npx jsr add @okudai/golikejs` |
-| pnpm | `pnpm i jsr:@okudai/golikejs` |
-| Bun | `bunx jsr add @okudai/golikejs` |
-| yarn | `yarn add jsr:@okudai/golikejs` |
-| vlt | `vlt install jsr:@okudai/golikejs` |
+| Deno | `deno add jsr:@okdaichi/golikejs` |
+| npm | `npx jsr add @okdaichi/golikejs` |
+| pnpm | `pnpm i jsr:@okdaichi/golikejs` |
+| Bun | `bunx jsr add @okdaichi/golikejs` |
+| yarn | `yarn add jsr:@okdaichi/golikejs` |
+| vlt | `vlt install jsr:@okdaichi/golikejs` |
 
 ### Quick Start
 
 ```ts
-import { Mutex } from 'jsr:@okudai/golikejs/sync';
+import { Mutex } from 'jsr:@okdaichi/golikejs/sync';
 
 const m = new Mutex();
 await m.lock();
